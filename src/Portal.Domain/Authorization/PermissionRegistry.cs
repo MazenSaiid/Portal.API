@@ -13,6 +13,15 @@ public static class PermissionRegistry
         new(Permissions.Customers.Delete, "Customers", "Delete customers"),
         new(Permissions.Customers.AddActivity, "Customers", "Log interactions, add notes and upload attachments"),
 
+        new(Permissions.Tickets.View, "Tickets", "View tickets and their history"),
+        new(Permissions.Tickets.Create, "Tickets", "Create tickets"),
+        new(Permissions.Tickets.Edit, "Tickets", "Edit ticket subject, description, category, priority and channel"),
+        new(Permissions.Tickets.Work, "Tickets", "Work tickets: change status, comment, and be assigned"),
+        new(Permissions.Tickets.Assign, "Tickets", "Assign tickets to any agent"),
+        new(Permissions.Tickets.Escalate, "Tickets", "Escalate and de-escalate tickets"),
+        new(Permissions.Tickets.Delete, "Tickets", "Delete tickets"),
+        new(Permissions.Tickets.ManageCategories, "Tickets", "Manage ticket categories"),
+
         new(Permissions.Users.View, "Users", "View users"),
         new(Permissions.Users.Create, "Users", "Create users"),
         new(Permissions.Users.Edit, "Users", "Edit users, change status and reset passwords"),

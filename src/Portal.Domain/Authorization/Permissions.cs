@@ -6,6 +6,18 @@ namespace Portal.Domain.Authorization;
 /// </summary>
 public static class Permissions
 {
+    public static class Tickets
+    {
+        public const string View = "Tickets.View";
+        public const string Create = "Tickets.Create";
+        public const string Edit = "Tickets.Edit";
+        public const string Work = "Tickets.Work";
+        public const string Assign = "Tickets.Assign";
+        public const string Escalate = "Tickets.Escalate";
+        public const string Delete = "Tickets.Delete";
+        public const string ManageCategories = "Tickets.ManageCategories";
+    }
+
     public static class Users
     {
         public const string View = "Users.View";
