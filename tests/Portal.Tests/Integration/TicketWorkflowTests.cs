@@ -138,6 +138,19 @@ public sealed class TicketWorkflowTests(PortalApiFactory factory) : IClassFixtur
         escalated!.Priority.Should().Be(TicketPriority.Urgent);
     }
 
+    [Fact] // E4
+    public async Task Resolving_clears_the_escalation()
+    {
+        var admin = await factory.CreateAuthenticatedClientAsync();
+        var ticket = await admin.CreateTicketAsync();
+        await admin.PostAsJsonAsync($"/api/tickets/{ticket.Id}/escalate", new EscalateTicketRequest("VIP"), Json.Options);
+
+        var resolved = await admin.ChangeStatusAsync(ticket.Id, TicketStatus.Resolved, "Sorted");
+
+        resolved.IsEscalated.Should().BeFalse();
+        (await admin.GetHistoryAsync(ticket.Id)).Last().Type.Should().Be(TicketEventType.DeEscalated);
+    }
+
     [Fact] // E2
     public async Task Resolved_tickets_cannot_be_escalated()
     {

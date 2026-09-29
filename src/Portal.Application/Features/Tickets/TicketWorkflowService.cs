@@ -56,6 +56,12 @@ public sealed class TicketWorkflowService(
 
         ticket.Status = to;
         ticket.History.Add(History(TicketEventType.StatusChanged, from.ToString(), to.ToString(), Trim(request.Comment)));
+
+        if (ticket.IsEscalated && to is TicketStatus.Resolved or TicketStatus.Closed) // E4
+        {
+            ClearEscalation(ticket);
+            ticket.History.Add(History(TicketEventType.DeEscalated, message: $"Cleared automatically when the ticket was {Label(to).ToLowerInvariant()}."));
+        }
         return await SaveAsync(ticket, ct);
     }
 
@@ -110,9 +116,7 @@ public sealed class TicketWorkflowService(
         if (!ticket.IsEscalated)
             throw new BusinessRuleException("The ticket is not escalated.");
 
-        ticket.IsEscalated = false; // E3 — priority is kept
-        ticket.EscalatedAt = null;
-        ticket.EscalationReason = null;
+        ClearEscalation(ticket); // E3 — priority is kept
         ticket.History.Add(History(TicketEventType.DeEscalated, message: Trim(request.Comment)));
         return await SaveAsync(ticket, ct);
     }
@@ -152,6 +156,13 @@ public sealed class TicketWorkflowService(
         ticket.LastActivityAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
         return await tickets.GetByIdAsync(ticket.Id, ct);
+    }
+
+    private static void ClearEscalation(Ticket ticket)
+    {
+        ticket.IsEscalated = false;
+        ticket.EscalatedAt = null;
+        ticket.EscalationReason = null;
     }
 
     private static string? Trim(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
