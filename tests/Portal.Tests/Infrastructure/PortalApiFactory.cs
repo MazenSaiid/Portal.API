@@ -22,6 +22,9 @@ public sealed class PortalApiFactory : WebApplicationFactory<Program>
     // Kept open for the factory's lifetime; an in-memory SQLite database lives as long as its connection.
     private readonly SqliteConnection _connection = new("DataSource=:memory:");
 
+    /// <summary>Uploaded files go to a throw-away folder per factory.</summary>
+    public string StorageRoot { get; } = Path.Combine(Path.GetTempPath(), "portal-tests-" + Guid.NewGuid().ToString("N"));
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         _connection.Open();
@@ -32,6 +35,7 @@ public sealed class PortalApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Seed:AdminPassword", AdminPassword);
         builder.UseSetting("RateLimiting:LoginPermitsPerMinute", "1000");
         builder.UseSetting("RateLimiting:RefreshPermitsPerMinute", "1000");
+        builder.UseSetting("Storage:RootPath", StorageRoot);
 
         builder.ConfigureTestServices(services =>
         {
@@ -44,6 +48,8 @@ public sealed class PortalApiFactory : WebApplicationFactory<Program>
     protected override void Dispose(bool disposing)
     {
         base.Dispose(disposing);
-        if (disposing) _connection.Dispose();
+        if (!disposing) return;
+        _connection.Dispose();
+        if (Directory.Exists(StorageRoot)) Directory.Delete(StorageRoot, recursive: true);
     }
 }

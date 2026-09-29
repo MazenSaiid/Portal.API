@@ -111,3 +111,38 @@ public sealed class PagedQueryTests
         q.PageSize.Should().Be(expectedSize);
     }
 }
+
+public sealed class CustomerRuleTests
+{
+    private static readonly Portal.Application.Features.Customers.CustomerRequest Valid =
+        Portal.Tests.Infrastructure.CustomerTestData.NewCustomer();
+
+    [Theory]
+    [InlineData(Portal.Domain.Entities.Customers.ContactChannel.Email, "a@b.test", null, true)]
+    [InlineData(Portal.Domain.Entities.Customers.ContactChannel.Email, null, "+966500000000", false)]
+    [InlineData(Portal.Domain.Entities.Customers.ContactChannel.Sms, null, "+966500000000", true)]
+    [InlineData(Portal.Domain.Entities.Customers.ContactChannel.WhatsApp, "a@b.test", null, false)]
+    public void Preferred_channel_must_match_available_details(
+        Portal.Domain.Entities.Customers.ContactChannel channel, string? email, string? phone, bool valid)
+    {
+        var request = Valid with { PreferredChannel = channel, Email = email, Phone = phone };
+        new Portal.Application.Features.Customers.CustomerRequestValidator().Validate(request).IsValid.Should().Be(valid);
+    }
+
+    [Theory]
+    [InlineData("../../etc/passwd.pdf", "passwd.pdf")]
+    [InlineData(@"C:\temp\report.PDF", "report.PDF")]
+    public void Attachment_names_are_reduced_to_a_safe_file_name(string raw, string expected)
+    {
+        var (name, _, contentType) = Portal.Application.Features.Customers.AttachmentRules.Validate(
+            new Portal.Application.Features.Customers.UploadedFile(Stream.Null, raw, 10));
+        name.Should().Be(expected);
+        contentType.Should().Be("application/pdf");
+    }
+
+    [Fact]
+    public void Customer_code_is_zero_padded()
+    {
+        Portal.Domain.Entities.Customers.Customer.FormatCode(42).Should().Be("CUS-00042");
+    }
+}
