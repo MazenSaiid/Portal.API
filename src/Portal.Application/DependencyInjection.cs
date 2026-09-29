@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Portal.Application.Common.Security;
 using Portal.Application.Features.Auth;
+using Portal.Application.Features.Customers;
 using Portal.Application.Features.Permissions;
 using Portal.Application.Features.Roles;
 using Portal.Application.Features.Users;
@@ -21,6 +22,8 @@ public static class DependencyInjection
         services.AddScoped<ISessionRevoker, SessionRevoker>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<ICustomerService, CustomerService>();
+        services.AddScoped<ICustomerActivityService, CustomerActivityService>();
 
         return services;
     }
