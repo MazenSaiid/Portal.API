@@ -31,6 +31,7 @@ public sealed class PortalApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Seed:AdminEmail", AdminEmail);
         builder.UseSetting("Seed:AdminPassword", AdminPassword);
         builder.UseSetting("RateLimiting:LoginPermitsPerMinute", "1000");
+        builder.UseSetting("RateLimiting:RefreshPermitsPerMinute", "1000");
 
         builder.ConfigureTestServices(services =>
         {

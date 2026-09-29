@@ -91,7 +91,8 @@ public sealed class AuthTests(PortalApiFactory factory) : IClassFixture<PortalAp
 
         var ok = await client.PostAsJsonAsync("/api/auth/change-password",
             new ChangePasswordRequest(ApiClientExtensions.DefaultPassword, "NewPassw0rd!"));
-        ok.StatusCode.Should().Be(HttpStatusCode.NoContent);
+        ok.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await ok.Content.ReadFromJsonAsync<LoginResponse>())!.RefreshToken.Should().NotBeNullOrWhiteSpace();
 
         await factory.CreateAuthenticatedClientAsync(user.Email, "NewPassw0rd!"); // throws if login fails
     }
