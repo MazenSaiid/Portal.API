@@ -5,6 +5,7 @@ using Portal.Application.Features.Auth;
 using Portal.Application.Features.Customers;
 using Portal.Application.Features.Permissions;
 using Portal.Application.Features.Roles;
+using Portal.Application.Features.Tickets;
 using Portal.Application.Features.Users;
 
 namespace Portal.Application;
@@ -24,6 +25,9 @@ public static class DependencyInjection
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<ICustomerActivityService, CustomerActivityService>();
+        services.AddScoped<ITicketService, TicketService>();
+        services.AddScoped<ITicketWorkflowService, TicketWorkflowService>();
+        services.AddScoped<ITicketCategoryService, TicketCategoryService>();
 
         return services;
     }

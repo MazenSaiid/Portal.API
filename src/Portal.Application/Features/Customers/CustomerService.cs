@@ -13,6 +13,7 @@ public interface ICustomerService
 {
     Task<PagedResult<CustomerListItemDto>> GetPagedAsync(CustomerListQuery query, CancellationToken ct = default);
     Task<CustomerDto> GetByIdAsync(int id, CancellationToken ct = default);
+    Task<IReadOnlyList<CustomerLookupDto>> LookupAsync(string? search, CancellationToken ct = default);
     Task<CustomerDto> CreateAsync(CustomerRequest request, CancellationToken ct = default);
     Task<CustomerDto> UpdateAsync(int id, CustomerRequest request, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
@@ -71,6 +72,23 @@ public sealed partial class CustomerService(
             .FirstOrDefaultAsync(ct)
         ?? throw new NotFoundException("Customer", id);
 
+    public async Task<IReadOnlyList<CustomerLookupDto>> LookupAsync(string? search, CancellationToken ct = default)
+    {
+        var customers = db.Customers.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var term = search.Trim();
+            var codeId = ParseCode(term);
+            customers = customers.Where(c => c.Name.Contains(term) || (c.Email != null && c.Email.Contains(term))
+                                             || (c.Phone != null && c.Phone.Contains(term)) || (codeId != null && c.Id == codeId));
+        }
+        return await customers
+            .OrderByDescending(c => c.IsActive).ThenBy(c => c.Name)
+            .Take(20)
+            .Select(c => new CustomerLookupDto(c.Id, c.Name, c.Email, c.Phone, c.IsActive))
+            .ToListAsync(ct);
+    }
+
     public async Task<CustomerDto> CreateAsync(CustomerRequest request, CancellationToken ct = default)
     {
         await customerValidator.ValidateAndThrowAsync(request, ct);
@@ -93,6 +111,11 @@ public sealed partial class CustomerService(
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
         var customer = await db.Customers.FirstOrDefaultAsync(c => c.Id == id, ct) ?? throw new NotFoundException("Customer", id);
+        // Spec 004, K7 — tickets must never lose their customer.
+        var ticketCount = await db.Tickets.CountAsync(t => t.CustomerId == id, ct);
+        if (ticketCount > 0)
+            throw new ConflictException($"{customer.Name} has {ticketCount} ticket(s) and can't be deleted. Deactivate the customer instead.");
+
         var fileKeys = await db.CustomerAttachments.Where(a => a.CustomerId == id).Select(a => a.StorageKey).ToListAsync(ct);
 
         db.Customers.Remove(customer); // contacts, interactions, notes and attachment rows cascade (C8)

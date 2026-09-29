@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Portal.Domain.Entities;
 using Portal.Domain.Entities.Customers;
+using Portal.Domain.Entities.Tickets;
 
 namespace Portal.Application.Common.Interfaces;
 
@@ -17,6 +18,9 @@ public interface IApplicationDbContext
     DbSet<CustomerInteraction> CustomerInteractions { get; }
     DbSet<CustomerNote> CustomerNotes { get; }
     DbSet<CustomerAttachment> CustomerAttachments { get; }
+    DbSet<Ticket> Tickets { get; }
+    DbSet<TicketCategory> TicketCategories { get; }
+    DbSet<TicketHistoryEntry> TicketHistory { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

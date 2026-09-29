@@ -66,6 +66,12 @@ public sealed record CustomerRequest(
 
 public sealed record ContactRequest(string Name, string? JobTitle, string? Email, string? Phone, bool IsPrimary);
 
+/// <summary>Small result for pickers (e.g. choosing the customer of a new ticket).</summary>
+public sealed record CustomerLookupDto(int Id, string Name, string? Email, string? Phone, bool IsActive)
+{
+    public string Code => Customer.FormatCode(Id);
+}
+
 // ---------- Activity ----------
 
 public sealed class InteractionQuery : PagedQuery;
