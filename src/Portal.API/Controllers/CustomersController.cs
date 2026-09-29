@@ -17,6 +17,12 @@ public sealed class CustomersController(ICustomerService customers, ICustomerAct
     public Task<PagedResult<CustomerListItemDto>> GetAll([FromQuery] CustomerListQuery query, CancellationToken ct) =>
         customers.GetPagedAsync(query, ct);
 
+    /// <summary>Top 20 matches for pickers, e.g. choosing a ticket's customer.</summary>
+    [HttpGet("lookup")]
+    [HasPermission(Permissions.Customers.View, Permissions.Tickets.Create)]
+    public Task<IReadOnlyList<CustomerLookupDto>> Lookup([FromQuery] string? search, CancellationToken ct) =>
+        customers.LookupAsync(search, ct);
+
     [HttpGet("{id:int}")]
     [HasPermission(Permissions.Customers.View)]
     public Task<CustomerDto> GetById(int id, CancellationToken ct) => customers.GetByIdAsync(id, ct);
