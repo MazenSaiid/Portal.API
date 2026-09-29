@@ -42,7 +42,12 @@ public static class ApiServiceExtensions
             o.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             o.AddPolicy(RateLimitPolicies.Login, http => RateLimitPartition.GetFixedWindowLimiter(
                 http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-                _ => new FixedWindowRateLimiterOptions { PermitLimit = 10, Window = TimeSpan.FromMinutes(1) }));
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = http.RequestServices.GetRequiredService<IConfiguration>()
+                        .GetValue("RateLimiting:LoginPermitsPerMinute", 10),
+                    Window = TimeSpan.FromMinutes(1),
+                }));
         });
 
         services.AddSwagger();
