@@ -6,6 +6,7 @@ using Portal.Application.Common.Interfaces;
 using Portal.Domain.Common;
 using Portal.Domain.Entities;
 using Portal.Domain.Entities.Customers;
+using Portal.Domain.Entities.Tickets;
 
 namespace Portal.Infrastructure.Persistence;
 
@@ -21,6 +22,9 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser c
     public DbSet<CustomerInteraction> CustomerInteractions => Set<CustomerInteraction>();
     public DbSet<CustomerNote> CustomerNotes => Set<CustomerNote>();
     public DbSet<CustomerAttachment> CustomerAttachments => Set<CustomerAttachment>();
+    public DbSet<Ticket> Tickets => Set<Ticket>();
+    public DbSet<TicketCategory> TicketCategories => Set<TicketCategory>();
+    public DbSet<TicketHistoryEntry> TicketHistory => Set<TicketHistoryEntry>();
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {

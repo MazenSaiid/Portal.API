@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Portal.Domain.Authorization;
 using Portal.Domain.Entities;
+using Portal.Domain.Entities.Tickets;
 using Portal.Infrastructure.Persistence;
 
 namespace Portal.Infrastructure.Seeding;
@@ -42,6 +43,20 @@ public sealed class DatabaseInitializer(
         await EnsureRoleAsync("Agent", "Support agent. Permissions are granted per module.", isSystem: false);
         await GrantAllPermissionsAsync(admin, ct);
         await EnsureAdminUserAsync();
+        await SeedTicketCategoriesAsync(ct);
+    }
+
+    /// <summary>Starter categories on an empty database only; afterwards admins own the list.</summary>
+    private async Task SeedTicketCategoriesAsync(CancellationToken ct)
+    {
+        if (await db.TicketCategories.AnyAsync(ct)) return;
+        db.TicketCategories.AddRange(
+            new TicketCategory { Name = "General", Description = "Questions and requests that fit nowhere else" },
+            new TicketCategory { Name = "Billing", Description = "Invoices, payments and refunds" },
+            new TicketCategory { Name = "Technical", Description = "Product problems and outages" },
+            new TicketCategory { Name = "Account", Description = "Access, profile and account changes" },
+            new TicketCategory { Name = "Complaint", Description = "Service complaints and escalations from customers" });
+        await db.SaveChangesAsync(ct);
     }
 
     private async Task SyncPermissionsAsync(CancellationToken ct)
