@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -23,7 +24,8 @@ public static class ApiServiceExtensions
 
     public static IServiceCollection AddApi(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddControllers();
+        services.AddControllers()
+            .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
         services.AddProblemDetails();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddHttpContextAccessor();

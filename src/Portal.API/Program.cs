@@ -19,6 +19,12 @@ if (app.Configuration.GetValue("Database:InitializeOnStartup", true))
 }
 
 app.UseExceptionHandler();
+app.Use((context, next) =>
+{
+    // Browsers must never guess a content type (matters for downloaded attachments).
+    context.Response.Headers.XContentTypeOptions = "nosniff";
+    return next();
+});
 app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())

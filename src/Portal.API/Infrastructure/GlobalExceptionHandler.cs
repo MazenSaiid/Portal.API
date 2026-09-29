@@ -24,6 +24,7 @@ public sealed class GlobalExceptionHandler(IProblemDetailsService problemDetails
             },
             NotFoundException ex => Problem(StatusCodes.Status404NotFound, "Not found", ex.Message),
             ConflictException ex => Problem(StatusCodes.Status409Conflict, "Conflict", ex.Message),
+            ForbiddenException ex => Problem(StatusCodes.Status403Forbidden, "Forbidden", ex.Message),
             BusinessRuleException ex => Problem(StatusCodes.Status422UnprocessableEntity, "Business rule violated", ex.Message),
             AuthenticationFailedException ex => Problem(StatusCodes.Status401Unauthorized, "Authentication failed", ex.Message),
             _ => Problem(StatusCodes.Status500InternalServerError, "Server error", "An unexpected error occurred."),
