@@ -73,6 +73,18 @@ swap `PermissionCache` for a distributed cache or a short TTL; nothing else chan
   carries `X-Content-Type-Options: nosniff`.
 * Enums travel as strings (`"type": "Company"`) for readable payloads and simple TypeScript unions.
 
+## Tickets (added with [spec 004](specs/004-ticket-management.md))
+
+* **One workflow definition.** `TicketWorkflow` (Domain) holds the transition table. The service enforces it,
+  `TicketDto.AllowedStatuses` exposes it, and the UI renders only those buttons, so the three can't disagree.
+* **History is written by the server in the same save as the change** (`TicketHistoryEntry`, sequential id for stable
+  ordering). Names are stored as text snapshots so history stays readable after renames or deletions.
+* **Agents are derived from permissions.** An assignee is any active user whose role grants `Tickets.Work`; there is
+  no separate "is agent" flag to keep in sync.
+* Priority and status are stored as numbers so sorting follows severity and workflow order.
+* Delete behaviours: a customer or category in use is *restricted*, a deleted assignee *sets null*, and history
+  *cascades* with its ticket.
+
 ## Security measures
 
 * Identity password hashing, password policy, and account lockout (5 attempts → 5 minutes).

@@ -1,6 +1,6 @@
 # Verification — Module 001 Identity & Access
 
-Last verified: 2026-09-29. Backend `dotnet test`: **84 passed**. Frontend `npm run test:ci`: **37 passed**.
+Last verified: 2026-09-29. Backend `dotnet test`: **109 passed**. Frontend `npm run test:ci`: **44 passed**.
 Manual end-to-end run: all steps below passed against SQL Server with the Angular dev server.
 
 ## Acceptance criteria → evidence
@@ -79,3 +79,23 @@ A reload with an expired or invalid access token kept the user on `/users`. Afte
 **Found by the browser walkthrough and fixed:**
 1. The *Add note* button did nothing: the form used `ngSubmit` without a form directive. It now has a regression test in `customer-notes.spec.ts`.
 2. On phones the details cards overflowed the screen: the grid column needed `minmax(0, 1fr)`.
+
+# Verification — Module 004 Ticket management
+
+| AC | Criterion | Evidence |
+|---|---|---|
+| TK1 | Create with all fields, code, status, history | `TicketsTests.Creating_a_ticket_persists_every_field_and_records_history`, `Creating_with_an_assignee_starts_open`, `Invalid_ticket_returns_field_errors`, `Tickets_cannot_be_opened_for_an_inactive_customer` |
+| TK2 | Filters, search, sort, paging | `List_filters_by_status_priority_assignee_customer_and_escalation` (incl. severity sort) |
+| TK3 | Edits recorded in history | `Editing_records_each_change_in_history` |
+| TK4 | Workflow W1–W6 | `A_ticket_goes_through_its_full_life_and_every_step_is_recorded`, `Disallowed_transitions_are_rejected`, `In_progress_requires_an_assignee`, `Resolving_requires_a_resolution_comment`, `Closed_tickets_are_read_only_until_reopened`; `TicketWorkflowRuleTests`; `ticket-details.spec.ts` |
+| TK5 | Assignment A1–A3 | `Agent_can_take_an_unassigned_ticket_and_release_it_but_not_assign_others`, `Only_active_agents_can_be_assigned_and_are_listed`; `ticket-details.spec.ts` |
+| TK6 | Escalation E1–E4 | `Escalation_raises_priority_and_de_escalation_keeps_it`, `Escalation_never_lowers_priority`, `Resolved_tickets_cannot_be_escalated`, `Resolving_clears_the_escalation` |
+| TK7 | Comments + ordered history | Full-life test (exact event order), `ticket-labels.spec.ts` (timeline wording) |
+| TK8 | Categories | `Categories_are_unique_and_protected_while_in_use` |
+| TK9 | Permissions, customer tab, K7 | `Ticket_endpoints_require_permissions`, `Delete_ticket_and_customers_with_tickets_are_protected`; browser walkthrough |
+
+**Found during implementation and fixed:**
+1. A category test only passed because another test had already put "General" in use. It now creates its own ticket first.
+2. `*appHasPermission="…; else …"` isn't supported by the directive and failed at runtime; the frontend test caught it.
+3. Browser walkthrough: resolved tickets still showed the red *Escalated* marker, so rule E4 was added and tested. The
+   assignee workload count didn't refresh after assigning, and the customer page now opens on its *Tickets* tab.

@@ -14,8 +14,8 @@ Full-stack Customer Support CRM (feature map: [`azm_squad_customer_support_crm.p
 | 10 | Security & Administration — users, roles, permissions | ✅ Done, awaiting design sign-off | [spec 001](docs/specs/001-identity-access.md) · [plan](docs/plan/001-identity-access-tasks.md) |
 | 10 | Security & Administration — session renewal (refresh tokens) | ✅ Done | [spec 002](docs/specs/002-refresh-tokens.md) |
 | 10 | Security & Administration — audit logs, system configuration | ⏳ Next | — |
-| 1 | Customer management — profiles, contacts, interactions, notes, files | ✅ Done, awaiting sign-off | [spec 003](docs/specs/003-customer-management.md) · [plan](docs/plan/003-customer-management-tasks.md) |
-| 2 | Ticket management | ⏳ Planned (mandatory scope) | — |
+| 1 | Customer management — profiles, contacts, interactions, notes, files | ✅ Done | [spec 003](docs/specs/003-customer-management.md) · [plan](docs/plan/003-customer-management-tasks.md) |
+| 2 | Ticket management — workflow, assignment, escalation, history, categories | ✅ Done, awaiting sign-off | [spec 004](docs/specs/004-ticket-management.md) · [plan](docs/plan/004-ticket-management-tasks.md) |
 | 4 | Agent dashboard | ⏳ Planned (mandatory scope) | — |
 | 3, 5–9, 11, 12 | Channels, SLA, knowledge base, AI, portal, reports, integrations, platform | Optional / bonus | — |
 
@@ -56,8 +56,8 @@ Sign in with **admin@portal.local / Admin@12345** (development seed only).
 ## Tests
 
 ```bash
-dotnet test                                 # backend: 84 unit + integration tests
-cd ../Portal.FrontEnd && npm run test:ci    # frontend: 37 unit tests (headless Chrome)
+dotnet test                                 # backend: 109 unit + integration tests
+cd ../Portal.FrontEnd && npm run test:ci    # frontend: 44 unit tests (headless Chrome)
 ```
 
 Integration tests start the real API in-process (`WebApplicationFactory`) on an in-memory SQLite database,
