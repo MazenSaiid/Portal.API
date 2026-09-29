@@ -3,17 +3,58 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Portal.Application.Common.Interfaces;
+using Portal.Domain.Common;
 using Portal.Domain.Entities;
+using Portal.Domain.Entities.Customers;
 
 namespace Portal.Infrastructure.Persistence;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options)
+public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser currentUser)
     : IdentityDbContext<ApplicationUser, ApplicationRole, Guid, IdentityUserClaim<Guid>, ApplicationUserRole,
         IdentityUserLogin<Guid>, IdentityRoleClaim<Guid>, IdentityUserToken<Guid>>(options), IApplicationDbContext
 {
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Customer> Customers => Set<Customer>();
+    public DbSet<CustomerContact> CustomerContacts => Set<CustomerContact>();
+    public DbSet<CustomerInteraction> CustomerInteractions => Set<CustomerInteraction>();
+    public DbSet<CustomerNote> CustomerNotes => Set<CustomerNote>();
+    public DbSet<CustomerAttachment> CustomerAttachments => Set<CustomerAttachment>();
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        StampAuditFields();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        StampAuditFields();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    /// <summary>Sets Created/Updated At/By on every auditable entity being saved (Spec 003, C9).</summary>
+    private void StampAuditFields()
+    {
+        var now = DateTime.UtcNow;
+        var userId = currentUser.UserId;
+        foreach (var entry in ChangeTracker.Entries<AuditableEntity>())
+        {
+            if (entry.State == EntityState.Added)
+            {
+                entry.Entity.CreatedAt = now;
+                entry.Entity.CreatedById = userId;
+            }
+            else if (entry.State == EntityState.Modified)
+            {
+                entry.Entity.UpdatedAt = now;
+                entry.Entity.UpdatedById = userId;
+                entry.Property(e => e.CreatedAt).IsModified = false;
+                entry.Property(e => e.CreatedById).IsModified = false;
+            }
+        }
+    }
 
     /// <summary>All timestamps are stored in UTC; mark them as such when read so JSON carries the 'Z'.</summary>
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)
