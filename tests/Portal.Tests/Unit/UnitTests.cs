@@ -146,3 +146,34 @@ public sealed class CustomerRuleTests
         Portal.Domain.Entities.Customers.Customer.FormatCode(42).Should().Be("CUS-00042");
     }
 }
+
+public sealed class TicketWorkflowRuleTests
+{
+    [Fact]
+    public void No_status_can_move_to_itself()
+    {
+        foreach (var status in Enum.GetValues<Portal.Domain.Entities.Tickets.TicketStatus>())
+            Portal.Domain.Entities.Tickets.TicketWorkflow.CanMove(status, status).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Closed_tickets_can_only_be_reopened()
+    {
+        Portal.Domain.Entities.Tickets.TicketWorkflow.AllowedFrom(Portal.Domain.Entities.Tickets.TicketStatus.Closed)
+            .Should().Equal(Portal.Domain.Entities.Tickets.TicketStatus.Open);
+    }
+
+    [Fact]
+    public void Every_active_status_can_be_resolved_or_closed()
+    {
+        foreach (var status in Portal.Domain.Entities.Tickets.TicketWorkflow.ActiveStatuses)
+            Portal.Domain.Entities.Tickets.TicketWorkflow.AllowedFrom(status).Should().Contain(
+                [Portal.Domain.Entities.Tickets.TicketStatus.Resolved, Portal.Domain.Entities.Tickets.TicketStatus.Closed]);
+    }
+
+    [Fact]
+    public void Ticket_code_is_zero_padded()
+    {
+        Portal.Domain.Entities.Tickets.Ticket.FormatCode(7).Should().Be("TCK-00007");
+    }
+}
