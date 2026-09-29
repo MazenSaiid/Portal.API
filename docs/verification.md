@@ -1,6 +1,6 @@
 # Verification — Module 001 Identity & Access
 
-Last verified: 2026-09-29. Backend `dotnet test`: **48 passed**. Frontend `npm run test:ci`: **19 passed**.
+Last verified: 2026-09-29. Backend `dotnet test`: **55 passed**. Frontend `npm run test:ci`: **27 passed**.
 Manual end-to-end run: all steps below passed against SQL Server with the Angular dev server.
 
 ## Acceptance criteria → evidence
@@ -44,3 +44,20 @@ Run the API and the frontend (see README), then:
 8. Open **Administrator** permissions → info banner, every toggle disabled.
 9. Sign out, sign in as the agent → the menu shows only permitted items, the Users page has no *Add/Edit/Delete* buttons, and `/users` API calls work while `DELETE` would be 403.
 10. Narrow the window to phone width → the sidebar becomes a drawer and the table scrolls horizontally.
+
+# Verification — Module 002 Refresh tokens
+
+| AC | Criterion | Evidence |
+|---|---|---|
+| RT1/RT2 | Login returns a pair; refresh rotates it | `RefreshTokenTests.Refresh_rotates_the_token_pair_and_the_new_access_token_works` |
+| RT3 | Reuse of a rotated token kills all sessions | `RefreshTokenTests.Reusing_a_rotated_token_is_rejected_and_revokes_the_newer_one_too` |
+| RT4 | Logout revokes | `RefreshTokenTests.Logout_revokes_the_refresh_token_and_is_idempotent` |
+| RT5 | Deactivation / admin reset end sessions | `Deactivated_user_cannot_refresh`, `Admin_password_reset_ends_the_users_sessions` |
+| RT6 | Change password → new session, old revoked | `Change_password_returns_a_new_session_and_revokes_the_old_one` |
+| RT7 | UI renewal, retry, single flight, tab sync | `auth.service.spec.ts`, `auth.interceptor.spec.ts` |
+
+A test caught a real bug during implementation: tokens revoked by a password change were treated as "reuse", which
+killed the new session too. Reuse detection now applies only to rotated tokens (spec B4).
+
+**Live browser check** (API run with `Jwt__ExpiryMinutes=1`): the token renewed silently while the user stayed signed in.
+A reload with an expired or invalid access token kept the user on `/users`. After sign-out the old refresh token returned 401.

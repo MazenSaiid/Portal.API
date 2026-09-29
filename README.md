@@ -12,6 +12,7 @@ Full-stack Customer Support CRM (feature map: [`azm_squad_customer_support_crm.p
 | # | Module (PDF) | Status | Spec |
 |---|---|---|---|
 | 10 | Security & Administration — users, roles, permissions | ✅ Done, awaiting design sign-off | [spec 001](docs/specs/001-identity-access.md) · [plan](docs/plan/001-identity-access-tasks.md) |
+| 10 | Security & Administration — session renewal (refresh tokens) | ✅ Done | [spec 002](docs/specs/002-refresh-tokens.md) |
 | 10 | Security & Administration — audit logs, system configuration | ⏳ Next | — |
 | 1 | Customer management | ⏳ Planned (mandatory scope) | — |
 | 2 | Ticket management | ⏳ Planned (mandatory scope) | — |
@@ -43,17 +44,19 @@ Sign in with **admin@portal.local / Admin@12345** (development seed only).
 |---|---|---|
 | `ConnectionStrings:DefaultConnection` | `appsettings.json` | Defaults to `Server=.;Database=PortalDb;Trusted_Connection=True` |
 | `Jwt:Key` | `appsettings.Development.json` | **Empty in `appsettings.json` on purpose.** Outside development supply it via environment variable `Jwt__Key` or user-secrets (≥ 32 chars). The API refuses to start without it. |
-| `Jwt:ExpiryMinutes` | `appsettings.json` | Default 60 |
+| `Jwt:ExpiryMinutes` | `appsettings.json` | Access token lifetime, default 15 |
+| `Jwt:RefreshTokenDays` | `appsettings.json` | Refresh token lifetime, default 7 |
 | `Seed:AdminEmail` / `Seed:AdminPassword` | `appsettings*.json` | Admin is only created when a password is configured |
 | `Cors:AllowedOrigins` | `appsettings.json` | `http://localhost:4200` |
 | `Database:InitializeOnStartup` | `appsettings.json` | Migrate + seed at startup (idempotent). Turn off if migrations are applied by a pipeline. |
 | `RateLimiting:LoginPermitsPerMinute` | optional | Default 10 login attempts / minute / IP |
+| `RateLimiting:RefreshPermitsPerMinute` | optional | Default 60 refreshes / minute / IP |
 
 ## Tests
 
 ```bash
-dotnet test                                 # backend: 48 unit + integration tests
-cd ../Portal.FrontEnd && npm run test:ci    # frontend: 19 unit tests (headless Chrome)
+dotnet test                                 # backend: 55 unit + integration tests
+cd ../Portal.FrontEnd && npm run test:ci    # frontend: 27 unit tests (headless Chrome)
 ```
 
 Integration tests start the real API in-process (`WebApplicationFactory`) on an in-memory SQLite database,

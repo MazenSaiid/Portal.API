@@ -20,7 +20,8 @@ adding a mediator, repositories or CQRS, which this size of system does not need
 ## Request flow
 
 1. **Authentication** — `JwtBearer` validates signature, issuer, audience and lifetime. The token carries only
-   identity (`sub`, `email`, `name`, and `role` for display).
+   identity (`sub`, `email`, `name`, and `role` for display). Access tokens last 15 minutes and are renewed with a
+   rotating refresh token (see *Sessions* below).
 2. **Authorization** — endpoints declare `[HasPermission(Permissions.Users.Edit)]`.
    `PermissionPolicyProvider` builds the policy on the fly; `PermissionAuthorizationHandler` asks
    `IPermissionService` for the user's effective permissions.
@@ -50,6 +51,16 @@ adding a mediator, repositories or CQRS, which this size of system does not need
 
 The cache is in-memory (`IMemoryCache`), which is right for a single API instance. With several instances,
 swap `PermissionCache` for a distributed cache or a short TTL; nothing else changes.
+
+## Sessions (refresh tokens) — [spec 002](specs/002-refresh-tokens.md)
+
+* Login returns a 15-minute JWT and a 7-day refresh token. Only the refresh token's SHA-256 hash is stored (`RefreshTokens` table).
+* `POST /api/auth/refresh` **rotates**: the used token is revoked and linked (`ReplacedByTokenHash`) to its successor.
+  Presenting a rotated token again is treated as theft, and every session of that user is revoked.
+* Logout, deactivation and an admin password reset revoke sessions. Changing your own password revokes all sessions and returns a new one.
+* The SPA renews the token one minute before expiry, and again on any 401, then retries the request once.
+  Concurrent requests share a single refresh call, and tabs share tokens through `localStorage` events, so one tab
+  never replays a token another tab has rotated.
 
 ## Security measures
 
