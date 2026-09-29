@@ -72,12 +72,12 @@ Search matches name, email, phone and code (`CUS-00042` or `42`). Enums travel a
 
 ## 6. Acceptance criteria
 
-- [ ] CM1 — Create, view, edit and delete a customer. Invalid data returns per-field errors shown next to the fields (CR1, CR2).
-- [ ] CM2 — Duplicate email returns 409 (CR3).
-- [ ] CM3 — The list supports search (including by code), type and status filters, sorting and paging, and shows the last interaction date.
-- [ ] CM4 — Contacts can be added, edited and removed, with a single primary contact (CR4, CR5).
-- [ ] CM5 — Interactions are logged with type, direction, subject, summary and time. They show newest first and cannot be edited (C5, CR6).
-- [ ] CM6 — Notes can be added. Only the author or an editor can change or delete them (CR7).
-- [ ] CM7 — Files can be uploaded, downloaded and deleted within the limits (CR7, CR8).
-- [ ] CM8 — Every endpoint is protected by the permissions above; users without `Customers.AddActivity` see a read-only profile.
-- [ ] CM9 — Pages use the approved design system.
+- [x] CM1 — Create, view, edit and delete a customer. Invalid data returns per-field errors shown next to the fields (CR1, CR2).
+- [x] CM2 — Duplicate email returns 409 (CR3).
+- [x] CM3 — The list supports search (including by code), type and status filters, sorting and paging, and shows the last interaction date.
+- [x] CM4 — Contacts can be added, edited and removed, with a single primary contact (CR4, CR5).
+- [x] CM5 — Interactions are logged with type, direction, subject, summary and time. They show newest first and cannot be edited (C5, CR6).
+- [x] CM6 — Notes can be added. Only the author or an editor can change or delete them (CR7).
+- [x] CM7 — Files can be uploaded, downloaded and deleted within the limits (CR7, CR8).
+- [x] CM8 — Every endpoint is protected by the permissions above; users without `Customers.AddActivity` see a read-only profile.
+- [x] CM9 — Pages use the approved design system.

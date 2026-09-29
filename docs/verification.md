@@ -1,6 +1,6 @@
 # Verification — Module 001 Identity & Access
 
-Last verified: 2026-09-29. Backend `dotnet test`: **55 passed**. Frontend `npm run test:ci`: **27 passed**.
+Last verified: 2026-09-29. Backend `dotnet test`: **84 passed**. Frontend `npm run test:ci`: **37 passed**.
 Manual end-to-end run: all steps below passed against SQL Server with the Angular dev server.
 
 ## Acceptance criteria → evidence
@@ -61,3 +61,21 @@ killed the new session too. Reuse detection now applies only to rotated tokens (
 
 **Live browser check** (API run with `Jwt__ExpiryMinutes=1`): the token renewed silently while the user stayed signed in.
 A reload with an expired or invalid access token kept the user on `/users`. After sign-out the old refresh token returned 401.
+
+# Verification — Module 003 Customer management
+
+| AC | Criterion | Evidence |
+|---|---|---|
+| CM1 | CRUD + field errors (CR1, CR2) | `CustomersTests.Create_read_update_delete_customer`, `Invalid_customer_returns_field_errors`, `Customer_without_email_and_phone_is_rejected`, `Preferred_channel_must_be_reachable`; `CustomerRuleTests`; `customer-form-dialog.spec.ts` |
+| CM2 | Duplicate email → 409 | `Duplicate_email_is_rejected_case_insensitively_but_keeping_your_own_is_fine` |
+| CM3 | Search (incl. code), filters, sort, paging, last interaction | `List_supports_search_by_name_and_code_filters_and_paging`, `List_shows_last_interaction_date` |
+| CM4 | Contacts with single primary | `Contacts_can_be_managed_with_a_single_primary` |
+| CM5 | Interactions logged, newest first, immutable, no future dates | `Interactions_are_logged_and_listed_newest_first`, `Interaction_in_the_future_is_rejected`, `Interactions_cannot_be_edited_or_deleted` |
+| CM6 | Notes, author-or-editor rule | `Only_the_author_or_an_editor_can_change_a_note`, `customer-notes.spec.ts` |
+| CM7 | Files within limits, safe names and types | `Upload_download_and_delete_an_attachment`, `Disallowed_or_empty_files_are_rejected`, `Files_over_10_MB_are_rejected`, `Deleting_a_customer_removes_its_files_from_storage`, `customer-attachments.spec.ts` |
+| CM8 | Permission boundaries | `Customer_endpoints_require_permissions`, `Another_agent_cannot_delete_someone_elses_file` |
+| CM9 | Design system | Browser walkthrough: list, form, details, tabs, mobile width (no horizontal overflow at 390 px) |
+
+**Found by the browser walkthrough and fixed:**
+1. The *Add note* button did nothing: the form used `ngSubmit` without a form directive. It now has a regression test in `customer-notes.spec.ts`.
+2. On phones the details cards overflowed the screen: the grid column needed `minmax(0, 1fr)`.

@@ -62,6 +62,17 @@ swap `PermissionCache` for a distributed cache or a short TTL; nothing else chan
   Concurrent requests share a single refresh call, and tabs share tokens through `localStorage` events, so one tab
   never replays a token another tab has rotated.
 
+## Auditing and files (added with [spec 003](specs/003-customer-management.md))
+
+* Entities deriving from `AuditableEntity` get `CreatedAt/By` and `UpdatedAt/By` stamped in `AppDbContext.SaveChanges`
+  from `ICurrentUser`, so no service can forget them. Audit columns are plain ids without FKs, so deleting a user never
+  rewrites history (names show as "Former user"). The audit-log module builds on this hook.
+* Uploaded files go through `IFileStorage`. `LocalFileStorage` writes to `Storage:RootPath` under random names.
+  Application code only sees a `Stream`, so moving to blob storage is one new class. Downloads are always
+  `Content-Disposition: attachment` with a content type taken from an extension allow-list, and every response
+  carries `X-Content-Type-Options: nosniff`.
+* Enums travel as strings (`"type": "Company"`) for readable payloads and simple TypeScript unions.
+
 ## Security measures
 
 * Identity password hashing, password policy, and account lockout (5 attempts → 5 minutes).

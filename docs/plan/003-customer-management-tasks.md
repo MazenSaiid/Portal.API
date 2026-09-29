@@ -21,11 +21,11 @@ Spec: [003-customer-management.md](../specs/003-customer-management.md)
 | # | Task | Done |
 |---|---|---|
 | T1 | Spec, assumptions, acceptance criteria | ✅ |
-| T2 | Domain: `AuditableEntity`, Customer, Contact, Interaction, Note, Attachment, enums, permissions | ⬜ |
-| T3 | Infrastructure: EF configurations, audit stamping, migration, `LocalFileStorage` | ⬜ |
-| T4 | Application: DTOs, validators (CR1–CR8), `CustomerService`, `CustomerActivityService` | ⬜ |
-| T5 | API: `CustomersController`, multipart upload with size limit, safe download | ⬜ |
-| T6 | Integration + unit tests for CM1–CM8 | ⬜ |
-| T7 | Frontend: customers API service, list page, customer form dialog | ⬜ |
-| T8 | Frontend: details page, tabs, activity timeline, notes, attachments, contacts | ⬜ |
-| T9 | Frontend tests, browser walkthrough, docs | ⬜ |
+| T2 | Domain: `AuditableEntity`, Customer, Contact, Interaction, Note, Attachment, enums, permissions | ✅ |
+| T3 | Infrastructure: EF configurations, audit stamping, migration, `LocalFileStorage` | ✅ |
+| T4 | Application: DTOs, validators (CR1–CR8), `CustomerService`, `CustomerActivityService` | ✅ |
+| T5 | API: `CustomersController`, multipart upload with size limit, safe download | ✅ |
+| T6 | Integration + unit tests for CM1–CM8 | ✅ |
+| T7 | Frontend: customers API service, list page, customer form dialog | ✅ |
+| T8 | Frontend: details page, tabs, activity timeline, notes, attachments, contacts | ✅ |
+| T9 | Frontend tests, browser walkthrough, docs | ✅ |
