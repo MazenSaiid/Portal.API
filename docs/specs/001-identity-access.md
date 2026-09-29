@@ -86,28 +86,28 @@ All responses are JSON. Errors use RFC 7807 `ProblemDetails` (`errors` dictionar
 ## 6. Acceptance criteria
 
 **Authentication**
-- [ ] AC1 — Valid credentials return a JWT and the user's role and permissions.
-- [ ] AC2 — Wrong password returns 401 with a generic message (no user enumeration).
-- [ ] AC3 — Inactive users cannot sign in.
-- [ ] AC4 — Requests without a token to protected endpoints return 401.
+- [x] AC1 — Valid credentials return a JWT and the user's role and permissions.
+- [x] AC2 — Wrong password returns 401 with a generic message (no user enumeration).
+- [x] AC3 — Inactive users cannot sign in.
+- [x] AC4 — Requests without a token to protected endpoints return 401.
 
 **Authorization**
-- [ ] AC5 — A signed-in user without the required permission receives 403.
-- [ ] AC6 — Granting a permission to a role makes the endpoint accessible **on the next request** (no re-login).
-- [ ] AC7 — Revoking it makes the endpoint return 403 on the next request.
-- [ ] AC8 — The UI hides menu items, pages, and buttons the user has no permission for, and guards routes.
+- [x] AC5 — A signed-in user without the required permission receives 403.
+- [x] AC6 — Granting a permission to a role makes the endpoint accessible **on the next request** (no re-login).
+- [x] AC7 — Revoking it makes the endpoint return 403 on the next request.
+- [x] AC8 — The UI hides menu items, pages, and buttons the user has no permission for, and guards routes.
 
 **Users**
-- [ ] AC9 — Admin can list (search, filter by role/status, sort, paginate), create, edit, activate/deactivate, reset password, delete.
-- [ ] AC10 — Invalid input returns 400 with per-field errors, shown next to the fields in the UI.
-- [ ] AC11 — Duplicate email returns 409.
-- [ ] AC12 — Rules R3 and R4 are enforced.
+- [x] AC9 — Admin can list (search, filter by role/status, sort, paginate), create, edit, activate/deactivate, reset password, delete.
+- [x] AC10 — Invalid input returns 400 with per-field errors, shown next to the fields in the UI.
+- [x] AC11 — Duplicate email returns 409.
+- [x] AC12 — Rules R3 and R4 are enforced.
 
 **Roles & permissions**
-- [ ] AC13 — Admin can create, rename and delete roles (R2, R5, R6 enforced).
-- [ ] AC14 — The permissions screen lists every permission from the catalogue grouped by module, each with a toggle; a module header toggle grants/revokes the whole module.
-- [ ] AC15 — The Administrator role is shown read-only with all permissions on.
+- [x] AC13 — Admin can create, rename and delete roles (R2, R5, R6 enforced).
+- [x] AC14 — The permissions screen lists every permission from the catalogue grouped by module, each with a toggle; a module header toggle grants/revokes the whole module.
+- [x] AC15 — The Administrator role is shown read-only with all permissions on.
 
 **UX**
-- [ ] AC16 — All pages share one design system (colors, font family, font sizes, spacing, components).
-- [ ] AC17 — Every mutation gives feedback (toast); destructive actions ask for confirmation; loading and empty states are shown.
+- [x] AC16 — All pages share one design system (colors, font family, font sizes, spacing, components).
+- [x] AC17 — Every mutation gives feedback (toast); destructive actions ask for confirmation; loading and empty states are shown.
