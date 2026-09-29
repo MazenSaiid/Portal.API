@@ -14,6 +14,15 @@ public static class Permissions
         public const string Delete = "Users.Delete";
     }
 
+    public static class Customers
+    {
+        public const string View = "Customers.View";
+        public const string Create = "Customers.Create";
+        public const string Edit = "Customers.Edit";
+        public const string Delete = "Customers.Delete";
+        public const string AddActivity = "Customers.AddActivity";
+    }
+
     public static class Roles
     {
         public const string View = "Roles.View";
