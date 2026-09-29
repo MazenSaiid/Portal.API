@@ -18,6 +18,7 @@ public static class DependencyInjection
         services.AddSingleton<PermissionCache>();
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ISessionRevoker, SessionRevoker>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IRoleService, RoleService>();
 

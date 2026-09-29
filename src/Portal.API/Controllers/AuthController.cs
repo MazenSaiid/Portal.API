@@ -18,6 +18,25 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
     public Task<LoginResponse> Login(LoginRequest request, CancellationToken ct) =>
         authService.LoginAsync(request, ct);
 
+    /// <summary>Exchanges a refresh token for a new token pair (the old refresh token is revoked).</summary>
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    [EnableRateLimiting(RateLimitPolicies.Refresh)]
+    [ProducesResponseType<LoginResponse>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    public Task<LoginResponse> Refresh(RefreshTokenRequest request, CancellationToken ct) =>
+        authService.RefreshAsync(request, ct);
+
+    /// <summary>Revokes the given refresh token. Idempotent.</summary>
+    [HttpPost("logout")]
+    [AllowAnonymous]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Logout(RefreshTokenRequest request, CancellationToken ct)
+    {
+        await authService.LogoutAsync(request, ct);
+        return NoContent();
+    }
+
     [HttpGet("me")]
     [Authorize]
     public Task<CurrentUserDto> Me(CancellationToken ct) =>
@@ -25,10 +44,6 @@ public sealed class AuthController(IAuthService authService) : ControllerBase
 
     [HttpPost("change-password")]
     [Authorize]
-    [ProducesResponseType(StatusCodes.Status204NoContent)]
-    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request, CancellationToken ct)
-    {
-        await authService.ChangePasswordAsync(User.GetUserId()!.Value, request, ct);
-        return NoContent();
-    }
+    public Task<LoginResponse> ChangePassword(ChangePasswordRequest request, CancellationToken ct) =>
+        authService.ChangePasswordAsync(User.GetUserId()!.Value, request, ct);
 }

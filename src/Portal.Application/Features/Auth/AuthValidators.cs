@@ -20,3 +20,11 @@ public sealed class ChangePasswordRequestValidator : AbstractValidator<ChangePas
             .NotEqual(x => x.CurrentPassword).WithMessage("New password must be different from the current password.");
     }
 }
+
+public sealed class RefreshTokenRequestValidator : AbstractValidator<RefreshTokenRequest>
+{
+    public RefreshTokenRequestValidator()
+    {
+        RuleFor(x => x.RefreshToken).NotEmpty().MaximumLength(200);
+    }
+}

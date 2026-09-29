@@ -14,6 +14,7 @@ namespace Portal.API.Infrastructure;
 public static class RateLimitPolicies
 {
     public const string Login = "login";
+    public const string Refresh = "refresh";
 }
 
 public static class ApiServiceExtensions
@@ -46,6 +47,14 @@ public static class ApiServiceExtensions
                 {
                     PermitLimit = http.RequestServices.GetRequiredService<IConfiguration>()
                         .GetValue("RateLimiting:LoginPermitsPerMinute", 10),
+                    Window = TimeSpan.FromMinutes(1),
+                }));
+            o.AddPolicy(RateLimitPolicies.Refresh, http => RateLimitPartition.GetFixedWindowLimiter(
+                http.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                _ => new FixedWindowRateLimiterOptions
+                {
+                    PermitLimit = http.RequestServices.GetRequiredService<IConfiguration>()
+                        .GetValue("RateLimiting:RefreshPermitsPerMinute", 60),
                     Window = TimeSpan.FromMinutes(1),
                 }));
         });

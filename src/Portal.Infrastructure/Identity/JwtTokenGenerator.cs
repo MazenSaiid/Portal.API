@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -18,7 +19,8 @@ public sealed class JwtOptions
 
     [Required] public string Issuer { get; init; } = string.Empty;
     [Required] public string Audience { get; init; } = string.Empty;
-    [Range(5, 1440)] public int ExpiryMinutes { get; init; } = 60;
+    [Range(1, 1440)] public int ExpiryMinutes { get; init; } = 15;
+    [Range(1, 90)] public int RefreshTokenDays { get; init; } = 7;
 }
 
 public sealed class JwtTokenGenerator(IOptions<JwtOptions> options, TimeProvider clock) : IJwtTokenGenerator
@@ -45,4 +47,17 @@ public sealed class JwtTokenGenerator(IOptions<JwtOptions> options, TimeProvider
         var token = new JwtSecurityToken(jwt.Issuer, jwt.Audience, claims, now, expires, credentials);
         return new AccessToken(new JwtSecurityTokenHandler().WriteToken(token), expires);
     }
+
+    public NewRefreshToken CreateRefreshToken()
+    {
+        var token = Base64UrlEncode(RandomNumberGenerator.GetBytes(64));
+        var expires = clock.GetUtcNow().UtcDateTime.AddDays(options.Value.RefreshTokenDays);
+        return new NewRefreshToken(token, HashRefreshToken(token), expires);
+    }
+
+    public string HashRefreshToken(string token) =>
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(token)));
+
+    private static string Base64UrlEncode(byte[] bytes) =>
+        Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
 }

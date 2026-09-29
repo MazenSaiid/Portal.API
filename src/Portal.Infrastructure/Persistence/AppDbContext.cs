@@ -13,6 +13,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 {
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     /// <summary>All timestamps are stored in UTC; mark them as such when read so JSON carries the 'Z'.</summary>
     protected override void ConfigureConventions(ModelConfigurationBuilder builder)

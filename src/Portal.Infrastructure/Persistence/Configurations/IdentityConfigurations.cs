@@ -50,3 +50,16 @@ internal sealed class RolePermissionConfiguration : IEntityTypeConfiguration<Rol
         b.HasOne(rp => rp.Permission).WithMany(p => p.RolePermissions).HasForeignKey(rp => rp.PermissionId).OnDelete(DeleteBehavior.Cascade);
     }
 }
+
+internal sealed class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
+{
+    public void Configure(EntityTypeBuilder<RefreshToken> b)
+    {
+        b.ToTable("RefreshTokens");
+        b.Property(t => t.TokenHash).HasMaxLength(64).IsRequired();
+        b.Property(t => t.ReplacedByTokenHash).HasMaxLength(64);
+        b.HasIndex(t => t.TokenHash).IsUnique();
+        b.HasIndex(t => new { t.UserId, t.ExpiresAt });
+        b.HasOne(t => t.User).WithMany().HasForeignKey(t => t.UserId).OnDelete(DeleteBehavior.Cascade);
+    }
+}

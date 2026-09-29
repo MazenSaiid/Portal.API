@@ -7,6 +7,7 @@ using Portal.Application.Common.Exceptions;
 using Portal.Application.Common.Interfaces;
 using Portal.Application.Common.Models;
 using Portal.Application.Common.Security;
+using Portal.Application.Features.Auth;
 using Portal.Domain.Authorization;
 using Portal.Domain.Entities;
 
@@ -28,6 +29,7 @@ public sealed class UserService(
     UserManager<ApplicationUser> userManager,
     ICurrentUser currentUser,
     PermissionCache permissionCache,
+    ISessionRevoker sessionRevoker,
     IValidator<CreateUserRequest> createValidator,
     IValidator<UpdateUserRequest> updateValidator,
     IValidator<ResetPasswordRequest> resetPasswordValidator) : IUserService
@@ -124,10 +126,13 @@ public sealed class UserService(
         user.NormalizedEmail = userManager.NormalizeEmail(email);
         user.NormalizedUserName = userManager.NormalizeName(email);
         user.PhoneNumber = NullIfBlank(request.PhoneNumber);
+
+        var deactivated = user.IsActive && !request.IsActive;
         user.IsActive = request.IsActive;
         user.UpdatedAt = DateTime.UtcNow;
 
         await db.SaveChangesAsync(ct);
+        if (deactivated) await sessionRevoker.RevokeAllAsync(id, ct);
         permissionCache.InvalidateAll();
         return await GetByIdAsync(id, ct);
     }
@@ -146,6 +151,7 @@ public sealed class UserService(
         user.IsActive = isActive;
         user.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync(ct);
+        if (!isActive) await sessionRevoker.RevokeAllAsync(id, ct);
         permissionCache.InvalidateAll();
         return await GetByIdAsync(id, ct);
     }
@@ -162,6 +168,8 @@ public sealed class UserService(
         // An admin reset also clears a lockout so the user can sign in with the new password.
         await userManager.SetLockoutEndDateAsync(user, null);
         await userManager.ResetAccessFailedCountAsync(user);
+        await sessionRevoker.RevokeAllAsync(id, ct); // S4 — the old password's sessions end
+
     }
 
     public async Task DeleteAsync(Guid id, CancellationToken ct = default)
