@@ -7,6 +7,7 @@ using Portal.Domain.Entities;
 using Portal.Infrastructure.Identity;
 using Portal.Infrastructure.Persistence;
 using Portal.Infrastructure.Seeding;
+using Portal.Infrastructure.Sla;
 using Portal.Infrastructure.Storage;
 
 namespace Portal.Infrastructure;
@@ -48,6 +49,9 @@ public static class DependencyInjection
 
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
         services.AddSingleton<IFileStorage, LocalFileStorage>();
+
+        services.Configure<SlaMonitorOptions>(configuration.GetSection(SlaMonitorOptions.SectionName));
+        services.AddHostedService<SlaMonitor>();
 
         return services;
     }

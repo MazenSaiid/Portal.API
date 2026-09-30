@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Portal.Domain.Authorization;
 using Portal.Domain.Entities;
+using Portal.Domain.Entities.Sla;
 using Portal.Domain.Entities.Tickets;
 using Portal.Domain.Entities.Work;
 using Portal.Infrastructure.Persistence;
@@ -46,6 +47,23 @@ public sealed class DatabaseInitializer(
         await EnsureAdminUserAsync();
         await SeedTicketCategoriesAsync(ct);
         await SeedQuickRepliesAsync(ct);
+        await SeedSlaAsync(ct);
+    }
+
+    /// <summary>Spec 007, S2 — default targets per priority and the settings row. Admins change them later.</summary>
+    private async Task SeedSlaAsync(CancellationToken ct)
+    {
+        if (!await db.SlaPolicies.AnyAsync(ct))
+        {
+            db.SlaPolicies.AddRange(
+                new SlaPolicy { Priority = TicketPriority.Urgent, FirstResponseMinutes = 30, ResolutionMinutes = 4 * 60 },
+                new SlaPolicy { Priority = TicketPriority.High, FirstResponseMinutes = 2 * 60, ResolutionMinutes = 24 * 60 },
+                new SlaPolicy { Priority = TicketPriority.Medium, FirstResponseMinutes = 8 * 60, ResolutionMinutes = 3 * 24 * 60 },
+                new SlaPolicy { Priority = TicketPriority.Low, FirstResponseMinutes = 24 * 60, ResolutionMinutes = 5 * 24 * 60 });
+        }
+        if (!await db.AutomationSettings.AnyAsync(ct))
+            db.AutomationSettings.Add(new AutomationSettings { Id = 1, AutoAssignEnabled = false });
+        await db.SaveChangesAsync(ct);
     }
 
     /// <summary>Starter shared replies on an empty database only.</summary>

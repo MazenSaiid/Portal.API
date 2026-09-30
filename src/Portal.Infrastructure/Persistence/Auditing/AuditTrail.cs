@@ -6,6 +6,7 @@ using Portal.Application.Common.Interfaces;
 using Portal.Domain.Entities;
 using Portal.Domain.Entities.Auditing;
 using Portal.Domain.Entities.Customers;
+using Portal.Domain.Entities.Sla;
 using Portal.Domain.Entities.Tickets;
 using Portal.Domain.Entities.Work;
 
@@ -45,6 +46,9 @@ internal static class AuditTrail
         [typeof(Ticket)] = "Ticket",
         [typeof(TicketCategory)] = "TicketCategory",
         [typeof(QuickReply)] = "QuickReply",
+        [typeof(SlaPolicy)] = "SlaPolicy",
+        [typeof(AutomationSettings)] = "AutomationSettings",
+        [typeof(EscalationRule)] = "EscalationRule",
     };
 
     /// <summary>L4 / AL5 — secrets, derived copies and noise fields are never logged.</summary>
@@ -164,6 +168,9 @@ internal static class AuditTrail
             case CustomerAttachment x: return $"File {x.FileName} on {Customer.FormatCode(x.CustomerId)} {verb}";
             case Ticket t: return $"Ticket {Ticket.FormatCode(t.Id)} \"{t.Subject}\" {verb}";
             case TicketCategory c: return $"Ticket category {c.Name} {verb}";
+            case SlaPolicy sp: return $"SLA targets for {sp.Priority} priority {verb}";
+            case AutomationSettings: return $"Automation settings {verb}";
+            case EscalationRule er: return $"Escalation rule \"{er.Name}\" {verb}";
             case QuickReply q: return $"{(q.OwnerId is null ? "Shared" : "Personal")} quick reply \"{q.Title}\" {verb}";
             case RolePermission rp:
             {

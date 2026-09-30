@@ -26,6 +26,7 @@ internal sealed class TicketConfiguration : IEntityTypeConfiguration<Ticket>
         b.HasIndex(t => t.AssigneeId);
         b.HasIndex(t => t.CustomerId);
         b.HasIndex(t => t.LastActivityAt);
+        b.HasIndex(t => t.ResolutionDueAt);
     }
 }
 

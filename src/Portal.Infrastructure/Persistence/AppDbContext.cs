@@ -8,6 +8,7 @@ using Portal.Infrastructure.Persistence.Auditing;
 using Portal.Domain.Entities;
 using Portal.Domain.Entities.Auditing;
 using Portal.Domain.Entities.Customers;
+using Portal.Domain.Entities.Sla;
 using Portal.Domain.Entities.Tickets;
 using Portal.Domain.Entities.Work;
 
@@ -31,6 +32,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser c
     public DbSet<AgentTask> AgentTasks => Set<AgentTask>();
     public DbSet<QuickReply> QuickReplies => Set<QuickReply>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<SlaPolicy> SlaPolicies => Set<SlaPolicy>();
+    public DbSet<AutomationSettings> AutomationSettings => Set<AutomationSettings>();
+    public DbSet<EscalationRule> EscalationRules => Set<EscalationRule>();
+    public DbSet<EscalationRuleExecution> EscalationRuleExecutions => Set<EscalationRuleExecution>();
+    public DbSet<Notification> Notifications => Set<Notification>();
 
     // The app only saves asynchronously; the sync path funnels into the same audited save.
     public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
