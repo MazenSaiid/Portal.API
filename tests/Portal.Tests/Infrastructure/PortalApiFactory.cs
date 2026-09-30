@@ -38,6 +38,7 @@ public sealed class PortalApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("RateLimiting:LoginPermitsPerMinute", "1000");
         builder.UseSetting("RateLimiting:RefreshPermitsPerMinute", "1000");
         builder.UseSetting("Storage:RootPath", StorageRoot);
+        builder.UseSetting("Sla:MonitorEnabled", "false"); // tests run the SLA engine explicitly
 
         builder.ConfigureTestServices(services =>
         {

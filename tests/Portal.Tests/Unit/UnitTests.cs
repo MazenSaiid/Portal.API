@@ -178,3 +178,43 @@ public sealed class TicketWorkflowRuleTests
         Portal.Domain.Entities.Tickets.Ticket.FormatCode(7).Should().Be("TCK-00007");
     }
 }
+
+public sealed class SlaCalculatorTests
+{
+    private static readonly DateTime Start = new(2026, 9, 30, 8, 0, 0, DateTimeKind.Utc);
+    private static readonly DateTime Due = Start.AddHours(4);
+
+    [Theory]
+    [InlineData(60, Portal.Domain.Entities.Sla.SlaState.OnTrack)]   // 25 % used
+    [InlineData(179, Portal.Domain.Entities.Sla.SlaState.OnTrack)]  // just under 75 %
+    [InlineData(180, Portal.Domain.Entities.Sla.SlaState.AtRisk)]   // 75 %
+    [InlineData(241, Portal.Domain.Entities.Sla.SlaState.Breached)] // past due
+    public void Open_targets_are_on_track_at_risk_or_breached(int minutesElapsed, Portal.Domain.Entities.Sla.SlaState expected)
+    {
+        Portal.Domain.Entities.Sla.SlaCalculator.State(Start, Due, null, Start.AddMinutes(minutesElapsed)).Should().Be(expected);
+    }
+
+    [Fact]
+    public void Completed_targets_are_met_or_breached_forever()
+    {
+        var late = Start.AddDays(10);
+        Portal.Domain.Entities.Sla.SlaCalculator.State(Start, Due, Due.AddMinutes(-1), late).Should().Be(Portal.Domain.Entities.Sla.SlaState.Met);
+        Portal.Domain.Entities.Sla.SlaCalculator.State(Start, Due, Due.AddMinutes(1), late).Should().Be(Portal.Domain.Entities.Sla.SlaState.Breached);
+    }
+
+    [Fact]
+    public void No_target_means_no_state()
+    {
+        Portal.Domain.Entities.Sla.SlaCalculator.State(Start, null, null, Start).Should().Be(Portal.Domain.Entities.Sla.SlaState.None);
+    }
+
+    [Fact]
+    public void Due_dates_and_the_at_risk_point_come_from_the_policy()
+    {
+        var dates = Portal.Domain.Entities.Sla.SlaCalculator.For(Start,
+            new Portal.Domain.Entities.Sla.SlaPolicy { FirstResponseMinutes = 30, ResolutionMinutes = 240 });
+        dates.FirstResponseDueAt.Should().Be(Start.AddMinutes(30));
+        dates.ResolutionDueAt.Should().Be(Start.AddMinutes(240));
+        dates.ResolutionAtRiskAt.Should().Be(Start.AddMinutes(180));
+    }
+}
