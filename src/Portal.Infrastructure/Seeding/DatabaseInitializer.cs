@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Portal.Domain.Authorization;
 using Portal.Domain.Entities;
 using Portal.Domain.Entities.Tickets;
+using Portal.Domain.Entities.Work;
 using Portal.Infrastructure.Persistence;
 
 namespace Portal.Infrastructure.Seeding;
@@ -44,6 +45,18 @@ public sealed class DatabaseInitializer(
         await GrantAllPermissionsAsync(admin, ct);
         await EnsureAdminUserAsync();
         await SeedTicketCategoriesAsync(ct);
+        await SeedQuickRepliesAsync(ct);
+    }
+
+    /// <summary>Starter shared replies on an empty database only.</summary>
+    private async Task SeedQuickRepliesAsync(CancellationToken ct)
+    {
+        if (await db.QuickReplies.AnyAsync(ct)) return;
+        db.QuickReplies.AddRange(
+            new QuickReply { Title = "Acknowledge request", Body = "Hello {customer},\n\nThank you for contacting us. We have logged your request as {ticket} and will get back to you shortly.\n\nBest regards,\n{agent}" },
+            new QuickReply { Title = "Ask for more details", Body = "Hello {customer},\n\nTo help us resolve {ticket} quickly, could you share any screenshots, reference numbers or the exact steps you took?\n\nThanks,\n{agent}" },
+            new QuickReply { Title = "Confirm resolution", Body = "Hello {customer},\n\nWe believe {ticket} is now resolved. If anything still isn't right, just reply and we'll reopen it.\n\nKind regards,\n{agent}" });
+        await db.SaveChangesAsync(ct);
     }
 
     /// <summary>Starter categories on an empty database only; afterwards admins own the list.</summary>

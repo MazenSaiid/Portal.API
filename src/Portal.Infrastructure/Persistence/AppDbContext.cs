@@ -7,6 +7,7 @@ using Portal.Domain.Common;
 using Portal.Domain.Entities;
 using Portal.Domain.Entities.Customers;
 using Portal.Domain.Entities.Tickets;
+using Portal.Domain.Entities.Work;
 
 namespace Portal.Infrastructure.Persistence;
 
@@ -25,6 +26,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser c
     public DbSet<Ticket> Tickets => Set<Ticket>();
     public DbSet<TicketCategory> TicketCategories => Set<TicketCategory>();
     public DbSet<TicketHistoryEntry> TicketHistory => Set<TicketHistoryEntry>();
+    public DbSet<AgentTask> AgentTasks => Set<AgentTask>();
+    public DbSet<QuickReply> QuickReplies => Set<QuickReply>();
 
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
