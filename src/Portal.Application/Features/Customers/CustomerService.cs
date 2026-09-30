@@ -118,6 +118,7 @@ public sealed partial class CustomerService(
 
         var fileKeys = await db.CustomerAttachments.Where(a => a.CustomerId == id).Select(a => a.StorageKey).ToListAsync(ct);
 
+        await db.AgentTasks.Where(t => t.CustomerId == id).ExecuteUpdateAsync(s => s.SetProperty(t => t.CustomerId, (int?)null), ct); // Spec 005, D6
         db.Customers.Remove(customer); // contacts, interactions, notes and attachment rows cascade (C8)
         await db.SaveChangesAsync(ct);
 

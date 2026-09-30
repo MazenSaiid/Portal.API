@@ -6,6 +6,7 @@ using Portal.Application.Features.Customers;
 using Portal.Application.Features.Permissions;
 using Portal.Application.Features.Roles;
 using Portal.Application.Features.Tickets;
+using Portal.Application.Features.Work;
 using Portal.Application.Features.Users;
 
 namespace Portal.Application;
@@ -28,6 +29,9 @@ public static class DependencyInjection
         services.AddScoped<ITicketService, TicketService>();
         services.AddScoped<ITicketWorkflowService, TicketWorkflowService>();
         services.AddScoped<ITicketCategoryService, TicketCategoryService>();
+        services.AddScoped<ITaskService, TaskService>();
+        services.AddScoped<IQuickReplyService, QuickReplyService>();
+        services.AddScoped<IDashboardService, DashboardService>();
 
         return services;
     }

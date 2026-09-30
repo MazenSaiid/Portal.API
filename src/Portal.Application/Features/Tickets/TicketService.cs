@@ -158,6 +158,8 @@ public sealed partial class TicketService(
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
         var ticket = await db.Tickets.FirstOrDefaultAsync(t => t.Id == id, ct) ?? throw new NotFoundException("Ticket", id);
+        // Spec 005, D6 — reminders about this ticket stay, just unlinked.
+        await db.AgentTasks.Where(t => t.TicketId == id).ExecuteUpdateAsync(s => s.SetProperty(t => t.TicketId, (int?)null), ct);
         db.Tickets.Remove(ticket); // history cascades
         await db.SaveChangesAsync(ct);
     }
