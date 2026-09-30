@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Portal.Application.Common.Interfaces;
 using Portal.Application.Common.Security;
 using Portal.Application.Features.Permissions;
+using Portal.Application.Features.Sla;
 using Portal.Application.Features.Tickets;
 using Portal.Domain.Entities.Tickets;
 using DomainPermissions = Portal.Domain.Authorization.Permissions;
@@ -76,5 +77,6 @@ public sealed class DashboardService(
         source.Select(t => new DashboardTicketDto(
             t.Id, t.Subject, t.Priority, t.Status, t.IsEscalated, t.Category.Name, t.CreatedAt, t.LastActivityAt,
             new DashboardCustomerDto(t.CustomerId, t.Customer.Name, t.Customer.Email, t.Customer.Phone,
-                db.Tickets.Count(o => o.CustomerId == t.CustomerId && o.Id != t.Id && active.Contains(o.Status)))));
+                db.Tickets.Count(o => o.CustomerId == t.CustomerId && o.Id != t.Id && active.Contains(o.Status))),
+            new TicketSlaDto(t.CreatedAt, t.FirstResponseDueAt, t.FirstRespondedAt, t.ResolutionDueAt, t.ResolvedAt ?? t.ClosedAt)));
 }

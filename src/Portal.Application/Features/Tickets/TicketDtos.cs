@@ -1,4 +1,5 @@
 using Portal.Application.Common.Models;
+using Portal.Application.Features.Sla;
 using Portal.Domain.Entities.Customers;
 using Portal.Domain.Entities.Tickets;
 
@@ -19,6 +20,9 @@ public sealed class TicketListQuery : PagedQuery
 
     public int? CustomerId { get; set; }
     public bool? Escalated { get; set; }
+
+    /// <summary><c>breached</c> or <c>atRisk</c> (Spec 007).</summary>
+    public string? Sla { get; set; }
 }
 
 public sealed record TicketListItemDto(
@@ -33,7 +37,8 @@ public sealed record TicketListItemDto(
     string? AssigneeName,
     bool IsEscalated,
     DateTime CreatedAt,
-    DateTime LastActivityAt)
+    DateTime LastActivityAt,
+    TicketSlaDto Sla)
 {
     public string Code => Ticket.FormatCode(Id);
     public string CustomerCode => Customer.FormatCode(CustomerId);
@@ -63,7 +68,8 @@ public sealed record TicketDto(
     DateTime? ClosedAt,
     DateTime CreatedAt,
     string? CreatedByName,
-    DateTime LastActivityAt)
+    DateTime LastActivityAt,
+    TicketSlaDto Sla)
 {
     public string Code => Ticket.FormatCode(Id);
 

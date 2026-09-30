@@ -6,6 +6,7 @@ using Portal.Application.Features.Auth;
 using Portal.Application.Features.Customers;
 using Portal.Application.Features.Permissions;
 using Portal.Application.Features.Roles;
+using Portal.Application.Features.Sla;
 using Portal.Application.Features.Tickets;
 using Portal.Application.Features.Work;
 using Portal.Application.Features.Users;
@@ -35,6 +36,10 @@ public static class DependencyInjection
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IAuditLogService, AuditLogService>();
+        services.AddScoped<INotifier, Notifier>();
+        services.AddScoped<INotificationService, NotificationService>();
+        services.AddScoped<ISlaService, SlaService>();
+        services.AddScoped<ISlaEngine, SlaEngine>();
 
         return services;
     }

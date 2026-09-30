@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Portal.Domain.Entities;
 using Portal.Domain.Entities.Auditing;
 using Portal.Domain.Entities.Customers;
+using Portal.Domain.Entities.Sla;
 using Portal.Domain.Entities.Tickets;
 using Portal.Domain.Entities.Work;
 
@@ -26,6 +27,11 @@ public interface IApplicationDbContext
     DbSet<AgentTask> AgentTasks { get; }
     DbSet<QuickReply> QuickReplies { get; }
     DbSet<AuditLog> AuditLogs { get; }
+    DbSet<SlaPolicy> SlaPolicies { get; }
+    DbSet<AutomationSettings> AutomationSettings { get; }
+    DbSet<EscalationRule> EscalationRules { get; }
+    DbSet<EscalationRuleExecution> EscalationRuleExecutions { get; }
+    DbSet<Notification> Notifications { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

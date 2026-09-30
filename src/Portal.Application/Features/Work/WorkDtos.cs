@@ -1,3 +1,4 @@
+using Portal.Application.Features.Sla;
 using Portal.Application.Features.Tickets;
 using Portal.Domain.Entities.Customers;
 using Portal.Domain.Entities.Tickets;
@@ -69,7 +70,8 @@ public sealed record DashboardTicketDto(
     string CategoryName,
     DateTime CreatedAt,
     DateTime LastActivityAt,
-    DashboardCustomerDto Customer)
+    DashboardCustomerDto Customer,
+    TicketSlaDto Sla)
 {
     public string Code => Ticket.FormatCode(Id);
 }

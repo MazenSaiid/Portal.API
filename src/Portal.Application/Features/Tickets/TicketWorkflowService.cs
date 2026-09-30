@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Portal.Application.Common.Exceptions;
 using Portal.Application.Common.Interfaces;
 using Portal.Application.Features.Permissions;
+using Portal.Application.Features.Sla;
+using Portal.Domain.Entities.Sla;
 using Portal.Domain.Entities.Tickets;
 using static Portal.Application.Features.Tickets.TicketRules;
 
@@ -24,6 +26,7 @@ public sealed class TicketWorkflowService(
     ICurrentUser currentUser,
     IPermissionService permissions,
     ITicketService tickets,
+    INotifier notifier,
     IValidator<ChangeStatusRequest> statusValidator,
     IValidator<EscalateTicketRequest> escalateValidator,
     IValidator<DeEscalateTicketRequest> deEscalateValidator,
@@ -55,6 +58,7 @@ public sealed class TicketWorkflowService(
         }
 
         ticket.Status = to;
+        ticket.RecordFirstResponse(now); // Spec 007, S3
         ticket.History.Add(History(TicketEventType.StatusChanged, from.ToString(), to.ToString(), Trim(request.Comment)));
 
         if (ticket.IsEscalated && to is TicketStatus.Resolved or TicketStatus.Closed) // E4
@@ -77,6 +81,10 @@ public sealed class TicketWorkflowService(
         ticket.History.Add(request.AssigneeId is null
             ? History(TicketEventType.Unassigned, from: oldName)
             : History(TicketEventType.Assigned, oldName, newName));
+
+        if (request.AssigneeId is { } newAssignee && newAssignee != currentUser.UserId) // Spec 007, S10
+            notifier.Notify(newAssignee, NotificationType.TicketAssigned, $"{Ticket.FormatCode(ticket.Id)} assigned to you",
+                $"\"{ticket.Subject}\" ({ticket.Priority} priority).", ticket.Id);
 
         if (request.AssigneeId is not null && ticket.Status == TicketStatus.New) // W4
         {
@@ -104,7 +112,11 @@ public sealed class TicketWorkflowService(
         {
             ticket.History.Add(History(TicketEventType.PriorityChanged, ticket.Priority.ToString(), nameof(TicketPriority.High), "Raised by escalation."));
             ticket.Priority = TicketPriority.High;
+            await db.ApplyPolicyAsync(ticket, ticket.CreatedAt, ct); // Spec 007, S4
         }
+        if (ticket.AssigneeId is { } owner && owner != currentUser.UserId) // Spec 007, S10
+            notifier.Notify(owner, NotificationType.TicketEscalated, $"{Ticket.FormatCode(ticket.Id)} was escalated",
+                ticket.EscalationReason ?? string.Empty, ticket.Id);
         return await SaveAsync(ticket, ct);
     }
 
@@ -130,6 +142,7 @@ public sealed class TicketWorkflowService(
         var entry = History(TicketEventType.Comment, message: request.Content.Trim());
         ticket.History.Add(entry);
         ticket.LastActivityAt = DateTime.UtcNow;
+        ticket.RecordFirstResponse(ticket.LastActivityAt); // Spec 007, S3
         await db.SaveChangesAsync(ct);
 
         return (await GetHistoryAsync(id, ct)).Single(h => h.Id == entry.Id);

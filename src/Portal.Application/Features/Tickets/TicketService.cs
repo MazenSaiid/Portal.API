@@ -6,6 +6,8 @@ using Portal.Application.Common.Exceptions;
 using Portal.Application.Common.Interfaces;
 using Portal.Application.Common.Models;
 using Portal.Application.Features.Permissions;
+using Portal.Application.Features.Sla;
+using Portal.Domain.Entities.Sla;
 using Portal.Domain.Entities.Tickets;
 using static Portal.Application.Features.Tickets.TicketRules;
 
@@ -25,6 +27,7 @@ public sealed partial class TicketService(
     IApplicationDbContext db,
     ICurrentUser currentUser,
     IPermissionService permissions,
+    INotifier notifier,
     IValidator<CreateTicketRequest> createValidator,
     IValidator<UpdateTicketRequest> updateValidator) : ITicketService
 {
@@ -43,6 +46,19 @@ public sealed partial class TicketService(
         if (query.CategoryId is { } categoryId) tickets = tickets.Where(t => t.CategoryId == categoryId);
         if (query.CustomerId is { } customerId) tickets = tickets.Where(t => t.CustomerId == customerId);
         if (query.Escalated is { } escalated) tickets = tickets.Where(t => t.IsEscalated == escalated);
+        if (!string.IsNullOrWhiteSpace(query.Sla))
+        {
+            var now = DateTime.UtcNow;
+            var open = TicketWorkflow.ActiveStatuses.ToList();
+            tickets = query.Sla.Trim().ToLowerInvariant() switch
+            {
+                "breached" => tickets.Where(t => open.Contains(t.Status)
+                    && ((t.FirstRespondedAt == null && t.FirstResponseDueAt < now) || t.ResolutionDueAt < now)),
+                "atrisk" => tickets.Where(t => open.Contains(t.Status) && t.ResolutionAtRiskAt <= now && t.ResolutionDueAt >= now
+                    && !(t.FirstRespondedAt == null && t.FirstResponseDueAt < now)),
+                _ => throw new ValidationException([new ValidationFailure("Sla", "Use 'breached' or 'atRisk'.")]),
+            };
+        }
 
         switch (query.AssignedTo?.Trim().ToLowerInvariant())
         {
@@ -66,7 +82,8 @@ public sealed partial class TicketService(
             .Select(t => new TicketListItemDto(t.Id, t.Subject, t.CustomerId, t.Customer.Name, t.Category.Name,
                 t.Priority, t.Status, t.AssigneeId,
                 t.Assignee == null ? null : t.Assignee.FirstName + " " + t.Assignee.LastName,
-                t.IsEscalated, t.CreatedAt, t.LastActivityAt))
+                t.IsEscalated, t.CreatedAt, t.LastActivityAt,
+                new TicketSlaDto(t.CreatedAt, t.FirstResponseDueAt, t.FirstRespondedAt, t.ResolutionDueAt, t.ResolvedAt ?? t.ClosedAt)))
             .ToListAsync(ct);
 
         return new PagedResult<TicketListItemDto>(items, query.Page, query.PageSize, total);
@@ -82,7 +99,8 @@ public sealed partial class TicketService(
                 t.AssigneeId, t.Assignee == null ? null : t.Assignee.FirstName + " " + t.Assignee.LastName,
                 t.IsEscalated, t.EscalatedAt, t.EscalationReason, t.ResolvedAt, t.ClosedAt,
                 t.CreatedAt, db.Users.Where(u => u.Id == t.CreatedById).Select(u => u.FirstName + " " + u.LastName).FirstOrDefault(),
-                t.LastActivityAt))
+                t.LastActivityAt,
+                new TicketSlaDto(t.CreatedAt, t.FirstResponseDueAt, t.FirstRespondedAt, t.ResolutionDueAt, t.ResolvedAt ?? t.ClosedAt)))
             .FirstOrDefaultAsync(ct)
         ?? throw new NotFoundException("Ticket", id);
 
@@ -96,10 +114,20 @@ public sealed partial class TicketService(
             throw new BusinessRuleException($"{customer.Name} is inactive. Reactivate the customer before opening tickets."); // T2
         await EnsureCategoryUsableAsync(request.CategoryId, currentCategoryId: null, ct);
 
-        var assigneeName = request.AssigneeId is null
+        var assigneeId = request.AssigneeId;
+        var assigneeName = assigneeId is null
             ? null
-            : await AuthorizeAssignmentAsync(db, permissions, currentUser, null, request.AssigneeId, ct);
+            : await AuthorizeAssignmentAsync(db, permissions, currentUser, null, assigneeId, ct);
 
+        // Spec 007, S6 — hand unassigned work to the least-loaded agent when auto-assignment is on.
+        string? assignedHow = null;
+        if (assigneeId is null && await db.IsAutoAssignEnabledAsync(ct) && await db.PickLeastLoadedAgentAsync(ct) is { } pick)
+        {
+            (assigneeId, assigneeName) = (pick.Id, pick.Name);
+            assignedHow = "Assigned automatically to the agent with the fewest active tickets.";
+        }
+
+        var now = DateTime.UtcNow;
         var ticket = new Ticket
         {
             CustomerId = request.CustomerId,
@@ -108,15 +136,23 @@ public sealed partial class TicketService(
             CategoryId = request.CategoryId,
             Priority = request.Priority,
             Channel = request.Channel,
-            AssigneeId = request.AssigneeId,
-            Status = request.AssigneeId is null ? TicketStatus.New : TicketStatus.Open, // W4
-            LastActivityAt = DateTime.UtcNow,
+            AssigneeId = assigneeId,
+            Status = assigneeId is null ? TicketStatus.New : TicketStatus.Open, // W4
+            LastActivityAt = now,
         };
+        await db.ApplyPolicyAsync(ticket, now, ct); // Spec 007, S1
         ticket.History.Add(History(TicketEventType.Created, to: ticket.Status.ToString()));
-        if (assigneeName is not null) ticket.History.Add(History(TicketEventType.Assigned, to: assigneeName));
+        if (assigneeName is not null) ticket.History.Add(History(TicketEventType.Assigned, to: assigneeName, message: assignedHow));
 
         db.Tickets.Add(ticket);
         await db.SaveChangesAsync(ct);
+
+        if (assigneeId is { } who && who != currentUser.UserId) // S10
+        {
+            notifier.Notify(who, NotificationType.TicketAssigned, $"{Ticket.FormatCode(ticket.Id)} assigned to you",
+                $"\"{ticket.Subject}\" ({ticket.Priority} priority).", ticket.Id);
+            await db.SaveChangesAsync(ct);
+        }
         return await GetByIdAsync(ticket.Id, ct);
     }
 
@@ -137,6 +173,7 @@ public sealed partial class TicketService(
         {
             ticket.History.Add(History(TicketEventType.PriorityChanged, ticket.Priority.ToString(), request.Priority.ToString()));
             ticket.Priority = request.Priority;
+            await db.ApplyPolicyAsync(ticket, ticket.CreatedAt, ct); // Spec 007, S4
         }
 
         var changed = new List<string>();
