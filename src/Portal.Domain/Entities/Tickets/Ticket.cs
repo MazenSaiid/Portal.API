@@ -30,6 +30,14 @@ public class Ticket : AuditableEntity
     /// <summary>Last time anything happened on the ticket, including comments. Drives "recently active" sorting.</summary>
     public DateTime LastActivityAt { get; set; }
 
+    // ---------- SLA (Spec 007) ----------
+    public DateTime? FirstResponseDueAt { get; set; }
+    public DateTime? FirstRespondedAt { get; set; }
+    public DateTime? ResolutionDueAt { get; set; }
+
+    /// <summary>The moment 75 % of the resolution window is used; stored so "at risk" is a simple comparison.</summary>
+    public DateTime? ResolutionAtRiskAt { get; set; }
+
     public DateTime? ResolvedAt { get; set; }
     public DateTime? ClosedAt { get; set; }
 

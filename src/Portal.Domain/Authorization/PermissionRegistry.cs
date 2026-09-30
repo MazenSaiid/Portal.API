@@ -25,6 +25,8 @@ public static class PermissionRegistry
         new(Permissions.Tickets.Delete, "Tickets", "Delete tickets"),
         new(Permissions.Tickets.ManageCategories, "Tickets", "Manage ticket categories"),
 
+        new(Permissions.Sla.Manage, "SLA", "Manage SLA targets, auto-assignment and escalation rules"),
+
         new(Permissions.Users.View, "Users", "View users"),
         new(Permissions.Users.Create, "Users", "Create users"),
         new(Permissions.Users.Edit, "Users", "Edit users, change status and reset passwords"),

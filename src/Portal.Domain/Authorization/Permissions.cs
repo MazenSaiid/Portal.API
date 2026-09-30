@@ -41,6 +41,11 @@ public static class Permissions
         public const string Manage = "QuickReplies.Manage";
     }
 
+    public static class Sla
+    {
+        public const string Manage = "Sla.Manage";
+    }
+
     public static class Customers
     {
         public const string View = "Customers.View";
