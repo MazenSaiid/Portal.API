@@ -9,3 +9,4 @@ TestResults/
 *.db-wal
 appsettings.Local.json
 App_Data/
+~$*

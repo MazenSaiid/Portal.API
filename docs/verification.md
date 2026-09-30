@@ -1,6 +1,6 @@
 # Verification — Module 001 Identity & Access
 
-Last verified: 2026-09-29. Backend `dotnet test`: **109 passed**. Frontend `npm run test:ci`: **44 passed**.
+Last verified: 2026-09-29. Backend `dotnet test`: **121 passed**. Frontend `npm run test:ci`: **54 passed**.
 Manual end-to-end run: all steps below passed against SQL Server with the Angular dev server.
 
 ## Acceptance criteria → evidence
@@ -99,3 +99,21 @@ A reload with an expired or invalid access token kept the user on `/users`. Afte
 2. `*appHasPermission="…; else …"` isn't supported by the directive and failed at runtime; the frontend test caught it.
 3. Browser walkthrough: resolved tickets still showed the red *Escalated* marker, so rule E4 was added and tested. The
    assignee workload count didn't refresh after assigning, and the customer page now opens on its *Tickets* tab.
+
+# Verification — Module 005 Agent dashboard
+
+| AC | Criterion | Evidence |
+|---|---|---|
+| AD1 | Landing page + correct summary | `DashboardTests.Summary_and_my_tickets_reflect_the_agents_work_in_priority_order`; browser walkthrough (login → `/dashboard`) |
+| AD2 | My tickets order + customer context | same test (escalated → urgent → low, other active tickets count); `agent-dashboard.spec.ts` |
+| AD3 | Unassigned queue + take | `Unassigned_queue_shows_waiting_tickets_most_urgent_first_and_they_can_be_taken`; `agent-dashboard.spec.ts` |
+| AD4 | Team workload + activity | `Team_activity_shows_what_others_did_on_my_tickets_but_not_my_own_actions`; `agent-dashboard.spec.ts` |
+| AD5 | Tasks lifecycle, links, privacy | `Tasks_can_be_created_edited_completed_reopened_and_deleted`, `Linking_a_task_to_a_ticket_also_links_the_customer`, `Deleting_a_linked_ticket_keeps_the_task_but_unlinks_it`, `Other_users_cannot_see_or_touch_my_tasks`; `my-tasks.spec.ts` |
+| AD6 | Reminder badge | `Reminders_count_overdue_and_due_today_tasks`; browser walkthrough (badge in top bar) |
+| AD7 | Quick replies | `Agents_see_seeded_shared_replies_and_their_own`, `Shared_replies_need_the_manage_permission_and_personal_ones_their_owner`; `fillPlaceholders` spec; walkthrough (inserted reply with customer name and ticket code) |
+| AD8 | Tiles deep-link | `agent-dashboard.spec.ts` (hrefs), `tickets-list.spec.ts` (URL → filters); walkthrough |
+| — | Permission gating | `Dashboard_requires_permission_and_hides_ticket_sections_without_ticket_access`, `Tasks_require_the_dashboard_permission` |
+
+**Found during implementation:** the permission-registry convention test flagged the new display name
+"Quick replies" against the key `QuickReplies.Manage`. The convention now ignores spaces and case, so module names can
+stay readable while keys stay consistent.

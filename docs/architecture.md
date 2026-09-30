@@ -85,6 +85,18 @@ swap `PermissionCache` for a distributed cache or a short TTL; nothing else chan
 * Delete behaviours: a customer or category in use is *restricted*, a deleted assignee *sets null*, and history
   *cascades* with its ticket.
 
+## Agent dashboard (added with [spec 005](specs/005-agent-dashboard.md))
+
+* `GET /api/dashboard` is a **read model** built per request from tickets, history and tasks. It stores nothing, so
+  it is never out of sync. Ticket sections are omitted for users without `Tickets.View`.
+* **Tasks are private by construction**: every query in `TaskService` starts from `OwnerId == me`, so another user's
+  task id simply returns 404.
+* Task → ticket/customer links use `ClientSetNull` (no DB action) because SQL Server forbids a second cascade path
+  from Users. Ticket and customer deletes unlink tasks first, so reminders survive.
+* Quick-reply placeholders (`{customer}`, `{agent}`, `{ticket}`) are filled on the client, where the ticket and
+  customer are already loaded, so no extra endpoint is needed.
+* "Due today" uses the user's local end of day, sent by the client, because the server runs in UTC.
+
 ## Security measures
 
 * Identity password hashing, password policy, and account lockout (5 attempts → 5 minutes).
