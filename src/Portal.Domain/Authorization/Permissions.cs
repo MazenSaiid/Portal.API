@@ -26,6 +26,11 @@ public static class Permissions
         public const string Delete = "Users.Delete";
     }
 
+    public static class AuditLogs
+    {
+        public const string View = "AuditLogs.View";
+    }
+
     public static class Dashboard
     {
         public const string View = "Dashboard.View";

@@ -35,5 +35,7 @@ public static class PermissionRegistry
         new(Permissions.Roles.Edit, "Roles", "Rename and describe roles"),
         new(Permissions.Roles.Delete, "Roles", "Delete roles"),
         new(Permissions.Roles.ManagePermissions, "Roles", "Grant and revoke role permissions"),
+
+        new(Permissions.AuditLogs.View, "Audit logs", "View the audit log"),
     ];
 }
