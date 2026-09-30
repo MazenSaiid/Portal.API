@@ -51,6 +51,20 @@ public sealed class AuditLogTests(PortalApiFactory factory) : IClassFixture<Port
         update.Summary.Should().Contain(ticket.Code);
     }
 
+    [Fact] // AL1 — references are shown by name, not by id
+    public async Task Referenced_records_are_shown_by_name()
+    {
+        var admin = await factory.CreateAuthenticatedClientAsync();
+        var me = (await admin.GetFromJsonAsync<CurrentUserDto>("/api/auth/me"))!;
+        var ticket = await admin.CreateTicketAsync(assigneeId: me.Id);
+
+        var created = (await LogsAsync(admin, $"entityType=Ticket&entityId={ticket.Id}&action=Created")).Single();
+
+        created.Changes.Should().Contain(new AuditChange("AssigneeId", null, "System Administrator"));
+        created.Changes.Should().Contain(new AuditChange("CategoryId", null, "General"));
+        created.Changes.Should().Contain(c => c.Field == "CustomerId" && c.To!.EndsWith($"({ticket.Customer.Code})"));
+    }
+
     [Fact] // AL2
     public async Task Permission_grants_and_role_assignments_are_logged_with_names()
     {

@@ -64,6 +64,27 @@ public sealed class DatabaseInitializer(
         if (!await db.AutomationSettings.AnyAsync(ct))
             db.AutomationSettings.Add(new AutomationSettings { Id = 1, AutoAssignEnabled = false });
         await db.SaveChangesAsync(ct);
+
+        // Tickets from before SLA tracking get due dates from their priority (measured from creation), once.
+        var policies = await db.SlaPolicies.AsNoTracking().ToDictionaryAsync(p => p.Priority, ct);
+        var legacy = await db.Tickets.Where(t => t.ResolutionDueAt == null).ToListAsync(ct);
+        foreach (var ticket in legacy)
+        {
+            if (!policies.TryGetValue(ticket.Priority, out var policy)) continue;
+            var dates = SlaCalculator.For(ticket.CreatedAt, policy);
+            ticket.FirstResponseDueAt = dates.FirstResponseDueAt;
+            ticket.ResolutionDueAt = dates.ResolutionDueAt;
+            ticket.ResolutionAtRiskAt = dates.ResolutionAtRiskAt;
+            // Any recorded activity after creation counts as the first response (S3).
+            ticket.FirstRespondedAt ??= await db.TicketHistory
+                .Where(h => h.TicketId == ticket.Id && (h.Type == TicketEventType.Comment || h.Type == TicketEventType.StatusChanged))
+                .OrderBy(h => h.Id).Select(h => (DateTime?)h.CreatedAt).FirstOrDefaultAsync(ct);
+        }
+        if (legacy.Count > 0)
+        {
+            await db.SaveChangesAsync(ct);
+            logger.LogInformation("Added SLA due dates to {Count} existing ticket(s)", legacy.Count);
+        }
     }
 
     /// <summary>Starter shared replies on an empty database only.</summary>

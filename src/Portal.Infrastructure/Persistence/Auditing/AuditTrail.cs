@@ -116,6 +116,7 @@ internal static class AuditTrail
         var logs = new List<AuditLog>();
         foreach (var p in pending)
         {
+            await ResolveReferencesAsync(db, p.Changes, ct);
             logs.Add(new AuditLog
             {
                 OccurredAt = now,
@@ -130,6 +131,40 @@ internal static class AuditTrail
             });
         }
         return logs;
+    }
+
+    /// <summary>Shows referenced records by name instead of raw ids, e.g. AssigneeId → "Sara Ali".</summary>
+    private static async Task ResolveReferencesAsync(AppDbContext db, List<AuditChange> changes, CancellationToken ct)
+    {
+        for (var i = 0; i < changes.Count; i++)
+        {
+            var c = changes[i];
+            var from = await NameOfAsync(db, c.Field, c.From, ct);
+            var to = await NameOfAsync(db, c.Field, c.To, ct);
+            if (from != c.From || to != c.To) changes[i] = c with { From = from, To = to };
+        }
+    }
+
+    private static async Task<string?> NameOfAsync(AppDbContext db, string field, string? value, CancellationToken ct)
+    {
+        if (value is null) return null;
+        string? name = field switch
+        {
+            "AssigneeId" or "OwnerId" or "UserId" when Guid.TryParse(value, out var userId) =>
+                await db.Users.AsNoTracking().Where(u => u.Id == userId).Select(u => u.FirstName + " " + u.LastName).FirstOrDefaultAsync(ct),
+            "RoleId" when Guid.TryParse(value, out var roleId) =>
+                await db.Roles.AsNoTracking().Where(r => r.Id == roleId).Select(r => r.Name).FirstOrDefaultAsync(ct),
+            "CategoryId" when int.TryParse(value, out var categoryId) =>
+                await db.TicketCategories.AsNoTracking().Where(x => x.Id == categoryId).Select(x => x.Name).FirstOrDefaultAsync(ct),
+            "CustomerId" when int.TryParse(value, out var customerId) =>
+                await db.Customers.AsNoTracking().Where(x => x.Id == customerId).Select(x => x.Name).FirstOrDefaultAsync(ct) is { } customer
+                    ? $"{customer} ({Customer.FormatCode(customerId)})" : null,
+            "TicketId" when int.TryParse(value, out var ticketId) => Ticket.FormatCode(ticketId),
+            "PermissionId" when int.TryParse(value, out var permissionId) =>
+                await db.Permissions.AsNoTracking().Where(x => x.Id == permissionId).Select(x => x.Key).FirstOrDefaultAsync(ct),
+            _ => null,
+        };
+        return name ?? value;
     }
 
     private static string KeyOf(EntityEntry entry) =>
