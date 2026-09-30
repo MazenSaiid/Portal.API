@@ -32,7 +32,3 @@ Spec: [001-identity-access.md](../specs/001-identity-access.md)
 | T15 | Roles pages (list, create/edit, permissions matrix with toggles) | Frontend | ✅ |
 | T16 | Frontend unit tests (guard, directive, auth service) | Frontend | ✅ |
 | T17 | README + architecture notes, verification checklist | Docs | ✅ |
-
-## Out of scope (tracked for later modules)
-
-Refresh tokens, audit log (PDF §10 — next in the Security module), Arabic/RTL (PDF §12 — the design system uses logical CSS properties so RTL can be enabled later), multi-branch.
