@@ -1,3 +1,5 @@
+using System.Net;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -42,6 +44,8 @@ public sealed class PortalApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<DbContextOptions<AppDbContext>>();
             services.RemoveAll<IDbContextOptionsConfiguration<AppDbContext>>();
             services.AddDbContext<AppDbContext>(o => o.UseSqlite(_connection));
+            // TestServer has no socket, so give requests a client IP like Kestrel would (audit logs record it).
+            services.AddSingleton<IStartupFilter, LoopbackClientIpFilter>();
         });
     }
 
@@ -52,4 +56,17 @@ public sealed class PortalApiFactory : WebApplicationFactory<Program>
         _connection.Dispose();
         if (Directory.Exists(StorageRoot)) Directory.Delete(StorageRoot, recursive: true);
     }
+}
+
+internal sealed class LoopbackClientIpFilter : IStartupFilter
+{
+    public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
+    {
+        app.Use((context, nextMiddleware) =>
+        {
+            context.Connection.RemoteIpAddress ??= IPAddress.Loopback;
+            return nextMiddleware();
+        });
+        next(app);
+    };
 }
