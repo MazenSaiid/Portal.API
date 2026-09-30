@@ -19,10 +19,10 @@ Spec: [006-audit-logs.md](../specs/006-audit-logs.md)
 | # | Task | Done |
 |---|---|---|
 | T1 | Spec, assumptions, acceptance criteria | ✅ |
-| T2 | Domain: AuditLog, actions, permission | ⬜ |
-| T3 | Infrastructure: AuditTrail capture, transaction, append-only guard, migration | ⬜ |
-| T4 | Application: IAuditLogger, security events in Auth/User services, AuditLogService queries | ⬜ |
-| T5 | API: AuditLogsController; CurrentUser name + IP | ⬜ |
-| T6 | Tests for AL1–AL8 | ⬜ |
-| T7 | Frontend: audit log page with filters, change details, navigation | ⬜ |
-| T8 | Frontend tests, walkthrough, docs | ⬜ |
+| T2 | Domain: AuditLog, actions, permission | ✅ |
+| T3 | Infrastructure: AuditTrail capture, transaction, append-only guard, migration | ✅ |
+| T4 | Application: IAuditLogger, security events in Auth/User services, AuditLogService queries | ✅ |
+| T5 | API: AuditLogsController; CurrentUser name + IP | ✅ |
+| T6 | Tests for AL1–AL8 | ✅ |
+| T7 | Frontend: audit log page with filters, change details, navigation | ✅ |
+| T8 | Frontend tests, walkthrough, docs | ✅ |

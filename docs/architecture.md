@@ -97,6 +97,28 @@ swap `PermissionCache` for a distributed cache or a short TTL; nothing else chan
   customer are already loaded, so no extra endpoint is needed.
 * "Due today" uses the user's local end of day, sent by the client, because the server runs in UTC.
 
+## Audit trail (added with [spec 006](specs/006-audit-logs.md))
+
+* `AppDbContext.SaveChangesAsync` captures Added/Modified/Deleted entries of audited types (`AuditTrail`), saves the
+  change, then writes the audit rows, **inside one transaction**. A change never commits without its audit entry.
+* Excluded fields (password hash, stamps, storage keys, normalised copies, last-sign-in noise) never reach the log.
+  Updates that only touch them produce no entry. Foreign keys are shown by name ("AssigneeId → Sara Ali").
+* Security events that aren't data changes go through `IAuditLogger` (sign-in, failures, lockout, sign-out, password
+  change/reset, token reuse).
+* The log is append-only: there's no write endpoint, and the context throws if an audit row is modified or deleted.
+  No FK to Users, so entries outlive the people they mention.
+
+## SLA & automation (added with [spec 007](specs/007-sla-automation.md))
+
+* `SlaCalculator` (Domain, pure) holds all SLA arithmetic. Tickets store `FirstResponseDueAt`, `ResolutionDueAt` and
+  `ResolutionAtRiskAt` (the 75 % point), so "breached" and "at risk" are plain date comparisons in SQL.
+* `SlaEngine.RunAsync(now)` evaluates escalation rules. `SlaMonitor` (a hosted service) calls it every minute;
+  tests call it directly with a future `now`, so there are no sleeps and no flaky timing. `EscalationRuleExecution`
+  makes every rule fire at most once per ticket.
+* Auto-assignment picks the least-loaded agent (fewest active tickets, then least recently assigned).
+* Notifications are rows written in the same save as the change that caused them. The bell polls the unread count
+  every minute and on navigation.
+
 ## Security measures
 
 * Identity password hashing, password policy, and account lockout (5 attempts → 5 minutes).

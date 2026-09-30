@@ -39,11 +39,11 @@ New permission: `AuditLogs.View` — *View the audit log*.
 
 ## 5. Acceptance criteria
 
-- [ ] AL1 — Creating, updating and deleting a customer, ticket, role, user or category produces entries with the user, time, IP, summary and changed fields (from → to).
-- [ ] AL2 — Granting/revoking a permission and changing a user's role are logged with readable names.
-- [ ] AL3 — Sign-in, failed sign-in (with attempted email), lockout, sign-out, password change/reset and token reuse are logged.
-- [ ] AL4 — Password hashes, stamps and storage keys never appear in the log.
-- [ ] AL5 — Updates that only touch noise fields (e.g. last sign-in time) produce no data entry.
-- [ ] AL6 — The log can be filtered by text, action, entity type/id, user and date range, newest first, paged.
-- [ ] AL7 — Audit rows can't be changed or deleted through the application.
-- [ ] AL8 — Only users with `AuditLogs.View` can read the log; the UI shows the changed fields per entry.
+- [x] AL1 — Creating, updating and deleting a customer, ticket, role, user or category produces entries with the user, time, IP, summary and changed fields (from → to).
+- [x] AL2 — Granting/revoking a permission and changing a user's role are logged with readable names.
+- [x] AL3 — Sign-in, failed sign-in (with attempted email), lockout, sign-out, password change/reset and token reuse are logged.
+- [x] AL4 — Password hashes, stamps and storage keys never appear in the log.
+- [x] AL5 — Updates that only touch noise fields (e.g. last sign-in time) produce no data entry.
+- [x] AL6 — The log can be filtered by text, action, entity type/id, user and date range, newest first, paged.
+- [x] AL7 — Audit rows can't be changed or deleted through the application.
+- [x] AL8 — Only users with `AuditLogs.View` can read the log; the UI shows the changed fields per entry.

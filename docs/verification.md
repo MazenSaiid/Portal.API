@@ -1,6 +1,6 @@
 # Verification — Module 001 Identity & Access
 
-Last verified: 2026-09-29. Backend `dotnet test`: **121 passed**. Frontend `npm run test:ci`: **54 passed**.
+Last verified: 2026-09-29. Backend `dotnet test`: **146 passed**. Frontend `npm run test:ci`: **65 passed**.
 Manual end-to-end run: all steps below passed against SQL Server with the Angular dev server.
 
 ## Acceptance criteria → evidence
@@ -117,3 +117,34 @@ A reload with an expired or invalid access token kept the user on `/users`. Afte
 **Found during implementation:** the permission-registry convention test flagged the new display name
 "Quick replies" against the key `QuickReplies.Manage`. The convention now ignores spaces and case, so module names can
 stay readable while keys stay consistent.
+
+# Verification — Module 006 Audit logs
+
+| AC | Criterion | Evidence |
+|---|---|---|
+| AL1 | Data changes with user, time, IP, summary, from → to | `AuditLogTests.Customer_create_update_delete_are_logged_with_user_ip_and_changes`, `Ticket_changes_are_logged_with_readable_values`, `Referenced_records_are_shown_by_name` |
+| AL2 | Permission grants and role assignments | `Permission_grants_and_role_assignments_are_logged_with_names` |
+| AL3 | Security events | `Security_events_are_logged` (unknown email, 5 failures, lockout, sign-in, sign-out, admin reset) |
+| AL4/AL5 | No secrets, no noise-only entries | `Secrets_and_noise_fields_never_reach_the_log` |
+| AL6 | Filters | `Log_can_be_filtered_by_text_action_user_and_date`; `audit-log.spec.ts` |
+| AL7 | Append-only | `Audit_entries_cannot_be_changed_or_deleted` (update and delete both throw) |
+| AL8 | Permission + UI details | `Reading_the_log_requires_permission`; `audit-log.spec.ts`; walkthrough (expand shows before/after, IP `::1`) |
+
+# Verification — Module 007 SLA & automation
+
+| AC | Criterion | Evidence |
+|---|---|---|
+| SA1 | Due dates from priority, recomputed on change | `SlaTests.New_tickets_get_due_dates_from_their_priority_and_priority_changes_recompute_them`; `SlaCalculatorTests` |
+| SA2 | First response + states | `The_first_comment_counts_as_the_first_response`; `SlaCalculatorTests` (on track / at risk at 75 % / breached / met) |
+| SA3 | Targets + auto-assign settings | `Targets_can_be_changed_by_sla_managers_only_and_are_validated`; `sla.spec.ts` |
+| SA4 | Auto-assignment | `AutoAssignTests.New_unassigned_tickets_go_to_the_least_loaded_agent_when_enabled` |
+| SA5 | Rules, once per ticket | `SlaEngineTests` (breached → escalate + notify supervisors, fires once; unassigned → raise priority, min priority, never lowers; invalid rules) |
+| SA6 | Notifications | `Assignment_and_escalation_notify_the_assignee_who_can_read_them` (own only, mark read / all, no self-notification) |
+| SA7 | SLA in list/page/dashboard + filter | `Ticket_list_filters_breached_and_at_risk_tickets`; `sla.spec.ts` (badge wording); walkthrough |
+
+**Checking the tests themselves:** removing the "already fired" check from `SlaEngine` makes
+`A_breached_resolution_rule_escalates_and_notifies_supervisors_exactly_once` fail.
+
+**Found by the walkthrough and fixed:** SQL Server warned that MARS disables savepoints inside the audited save, so MARS
+was removed from the default connection string. Audit changes showed raw ids, which are now resolved to names. Tickets
+created before SLA tracking had no due dates, which are now backfilled once at startup.

@@ -22,10 +22,10 @@ Spec: [007-sla-automation.md](../specs/007-sla-automation.md)
 | # | Task | Done |
 |---|---|---|
 | T1 | Spec, assumptions, rules, acceptance criteria | ✅ |
-| T2 | Domain: SlaPolicy, AutomationSettings, EscalationRule, EscalationRuleExecution, Notification, SlaCalculator, ticket SLA fields, permission | ⬜ |
-| T3 | Infrastructure: configuration, migration, seeding of default targets, hosted `SlaMonitor` | ⬜ |
-| T4 | Application: SlaService (policies, settings, rules), AutoAssigner, SlaEngine, Notifier + NotificationService, ticket SLA wiring | ⬜ |
-| T5 | API: SlaController, NotificationsController, SLA in ticket DTOs, `sla` list filter | ⬜ |
-| T6 | Tests: calculator unit tests; integration tests for SA1–SA7 | ⬜ |
-| T7 | Frontend: SLA admin page, SLA badge (list, ticket page, dashboard), notifications bell | ⬜ |
-| T8 | Frontend tests, browser walkthrough (with audit log), docs | ⬜ |
+| T2 | Domain: SlaPolicy, AutomationSettings, EscalationRule, EscalationRuleExecution, Notification, SlaCalculator, ticket SLA fields, permission | ✅ |
+| T3 | Infrastructure: configuration, migration, seeding of default targets, hosted `SlaMonitor` | ✅ |
+| T4 | Application: SlaService (policies, settings, rules), AutoAssigner, SlaEngine, Notifier + NotificationService, ticket SLA wiring | ✅ |
+| T5 | API: SlaController, NotificationsController, SLA in ticket DTOs, `sla` list filter | ✅ |
+| T6 | Tests: calculator unit tests; integration tests for SA1–SA7 | ✅ |
+| T7 | Frontend: SLA admin page, SLA badge (list, ticket page, dashboard), notifications bell | ✅ |
+| T8 | Frontend tests, browser walkthrough (with audit log), docs | ✅ |

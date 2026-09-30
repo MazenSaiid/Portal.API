@@ -19,7 +19,7 @@ the right people in the app.
 | S1 | **Targets are per priority** (first response and resolution, in minutes), measured in **calendar time (24/7)** from ticket creation. Business-hours calendars and pausing while *On hold* are out of scope. | Simple, predictable rules; calendars can be added behind the same calculation later. |
 | S2 | Defaults: Urgent 30 min / 4 h · High 2 h / 1 day · Medium 8 h / 3 days · Low 1 day / 5 days. Admins can change them. | Common starting points. |
 | S3 | **First response** = the first comment or status change after creation, by anyone. | The first sign that someone is working on it. |
-| S4 | Due dates are stored on the ticket and **recomputed when the priority changes** (still from the creation time). Already-met targets stay met. | A priority change changes the promise. |
+| S4 | Due dates are stored on the ticket and **recomputed when the priority changes** (still from the creation time). Already-met targets stay met. Changing the targets themselves affects new tickets and later priority changes; existing promises are kept. Tickets created before SLA tracking get due dates once, at startup. | A priority change changes the promise; a policy change shouldn't silently break existing ones. |
 | S5 | SLA state per target: *Met*, *Breached* (met late, or overdue), *At risk* (≥ 75 % of the time used), *On track*; resolved/closed tickets stop the resolution clock. | One consistent traffic light in lists, the ticket page and the dashboard. |
 | S6 | **Auto-assignment** (off by default): a new unassigned ticket goes to the active agent (K4) with the fewest active tickets; ties go to whoever was assigned least recently. | Fair load balancing without manual triage. |
 | S7 | **Escalation rules** are data: *trigger* (first response breached, resolution at risk, resolution breached, unassigned longer than N minutes) + optional *minimum priority* + *actions* (escalate, raise priority to X, notify assignee and/or supervisors). Each rule fires **at most once per ticket**. | Admins shape automation without code; no alert storms. |
@@ -59,10 +59,10 @@ and the ticket list can filter `?sla=breached|atRisk`.
 
 ## 6. Acceptance criteria
 
-- [ ] SA1 — New tickets get first-response and resolution due dates from their priority's targets; a priority change recomputes them.
-- [ ] SA2 — The first comment or status change records the first response; SLA states are computed as S5.
-- [ ] SA3 — Admins can edit targets (SL1) and toggle auto-assignment.
-- [ ] SA4 — With auto-assignment on, a new unassigned ticket goes to the least-loaded active agent and the history says so.
-- [ ] SA5 — Escalation rules can be managed (SL2) and, when evaluated, escalate / raise priority (SL3) / notify, once per ticket.
-- [ ] SA6 — Users get notifications for assignment, escalation of their ticket, and rule alerts; they can read them and mark them as read (SL4).
-- [ ] SA7 — Tickets list, ticket page and dashboard show SLA status; the list can filter breached / at-risk tickets.
+- [x] SA1 — New tickets get first-response and resolution due dates from their priority's targets; a priority change recomputes them.
+- [x] SA2 — The first comment or status change records the first response; SLA states are computed as S5.
+- [x] SA3 — Admins can edit targets (SL1) and toggle auto-assignment.
+- [x] SA4 — With auto-assignment on, a new unassigned ticket goes to the least-loaded active agent and the history says so.
+- [x] SA5 — Escalation rules can be managed (SL2) and, when evaluated, escalate / raise priority (SL3) / notify, once per ticket.
+- [x] SA6 — Users get notifications for assignment, escalation of their ticket, and rule alerts; they can read them and mark them as read (SL4).
+- [x] SA7 — Tickets list, ticket page and dashboard show SLA status; the list can filter breached / at-risk tickets.
