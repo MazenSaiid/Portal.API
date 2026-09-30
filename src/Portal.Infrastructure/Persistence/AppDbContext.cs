@@ -38,6 +38,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser c
     public DbSet<EscalationRuleExecution> EscalationRuleExecutions => Set<EscalationRuleExecution>();
     public DbSet<Notification> Notifications => Set<Notification>();
 
+    /// <summary>
+    /// Demo seeding only (<see cref="Seeding.DemoDataSeeder"/>): keep the back-dated timestamps and authors the seeder sets,
+    /// and skip the automatic audit trail because the seeder writes its own dated history.
+    /// </summary>
+    internal bool DemoSeeding { get; set; }
+
     // The app only saves asynchronously; the sync path funnels into the same audited save.
     public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
         SaveChangesAsync(acceptAllChangesOnSuccess).GetAwaiter().GetResult();
@@ -50,7 +56,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser c
         StampAuditFields();
         GuardAuditLog();
 
-        var pending = await AuditTrail.CaptureAsync(this, cancellationToken);
+        List<AuditTrail.Pending> pending = DemoSeeding ? [] : await AuditTrail.CaptureAsync(this, cancellationToken);
         if (pending.Count == 0)
             return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 
@@ -85,10 +91,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser c
         {
             if (entry.State == EntityState.Added)
             {
+                if (DemoSeeding && entry.Entity.CreatedAt != default) continue;
                 entry.Entity.CreatedAt = now;
                 entry.Entity.CreatedById = userId;
             }
-            else if (entry.State == EntityState.Modified)
+            else if (entry.State == EntityState.Modified && !DemoSeeding)
             {
                 entry.Entity.UpdatedAt = now;
                 entry.Entity.UpdatedById = userId;

@@ -46,6 +46,7 @@ public static class DependencyInjection
         services.AddSingleton(TimeProvider.System);
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<DatabaseInitializer>();
+        services.AddScoped<DemoDataSeeder>();
 
         services.Configure<StorageOptions>(configuration.GetSection(StorageOptions.SectionName));
         services.AddSingleton<IFileStorage, LocalFileStorage>();

@@ -12,7 +12,15 @@ builder.Services
 
 var app = builder.Build();
 
-if (app.Configuration.GetValue("Database:InitializeOnStartup", true))
+// `dotnet run -- --reset-demo` deletes every record and loads the demo data described in docs/demo.md.
+if (args.Contains("--reset-demo"))
+{
+    if (!app.Environment.IsDevelopment())
+        throw new InvalidOperationException("--reset-demo deletes all data, so it only runs in the Development environment.");
+    await using var scope = app.Services.CreateAsyncScope();
+    await scope.ServiceProvider.GetRequiredService<DemoDataSeeder>().ResetAsync();
+}
+else if (app.Configuration.GetValue("Database:InitializeOnStartup", true))
 {
     await using var scope = app.Services.CreateAsyncScope();
     await scope.ServiceProvider.GetRequiredService<DatabaseInitializer>().InitializeAsync();
