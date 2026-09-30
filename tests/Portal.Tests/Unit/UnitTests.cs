@@ -31,7 +31,8 @@ public sealed class PermissionRegistryTests
     [Fact]
     public void Keys_follow_module_dot_action_convention()
     {
-        PermissionRegistry.All.Should().OnlyContain(p => p.Key.StartsWith(p.Module + "."));
+        // Module names are display names ("Quick replies"); keys drop the spaces ("QuickReplies.Manage").
+        PermissionRegistry.All.Should().OnlyContain(p => p.Key.StartsWith(p.Module.Replace(" ", "") + ".", StringComparison.OrdinalIgnoreCase));
     }
 }
 
