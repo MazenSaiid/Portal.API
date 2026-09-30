@@ -2,9 +2,8 @@
 
 | Item | Value |
 |---|---|
-| Source module | PDF §10 *Security & Administration* — Users and roles, Permissions |
-| Rubric scope | Mandatory — *Authentication and authorization* (authentication plus at least one role/permission boundary) |
-| Status | Implemented — awaiting design confirmation |
+| Area | *Security & Administration* — Users and roles, Permissions |
+| Status | Implemented |
 
 ## 1. Goal
 
@@ -23,7 +22,7 @@ Give administrators a fully dynamic way to control **who can do what** in the Po
 | A2 | Permissions are **defined in code** (`PermissionRegistry`) and **synced to the database** at startup. Roles and role→permission grants are fully data-driven. | A permission only has meaning if code checks it; letting admins invent permission keys that nothing enforces would be misleading. New modules just add entries to the registry — no migration, no UI change. |
 | A3 | The seeded **Administrator** role is a *system role*: it always holds every permission, cannot be renamed, deleted, or have permissions revoked. | Guarantees the system can never be locked out. |
 | A4 | Permission checks happen **on the server per request** (cached, invalidated on change) rather than being baked into the JWT. | Toggling a permission takes effect immediately, without waiting for token expiry. |
-| A5 | Access tokens live 60 minutes; no refresh tokens in this iteration. On expiry the user signs in again. | Keeps scope focused (rubric: avoid over-engineering). Refresh tokens can be added later without API changes to other modules. |
+| A5 | *Superseded by [spec 002](002-refresh-tokens.md):* access tokens last 15 minutes and are renewed silently with a rotating refresh token. | Keeps scope focused (rubric: avoid over-engineering). Refresh tokens can be added later without API changes to other modules. |
 | A6 | Users are deactivated (not soft-deleted) to block access; hard delete is available with a separate permission. | Deactivation is reversible and is the common admin action. |
 | A7 | Account lockout: 5 failed sign-ins → 5 minute lockout. Password policy: min 8 chars, upper, lower, digit, non-alphanumeric. | Sensible Identity defaults for an internal CRM. |
 | A8 | SQL Server is the production database. Integration tests run on SQLite. | Same stack as other Portal projects; tests stay self-contained. |

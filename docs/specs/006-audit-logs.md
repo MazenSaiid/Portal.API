@@ -2,9 +2,8 @@
 
 | Item | Value |
 |---|---|
-| Source module | PDF §10 *Security & Administration* — audit logs |
-| Rubric scope | Supports *Authentication and authorization* and *Testing, Security & Edge Cases* |
-| Status | Implemented — awaiting sign-off |
+| Area | *Security & Administration* — audit logs |
+| Status | Implemented |
 
 ## 1. Goal
 

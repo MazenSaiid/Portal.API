@@ -2,9 +2,8 @@
 
 | Item | Value |
 |---|---|
-| Source module | PDF §1 *Customer Management* — profiles, contact details, interaction history, notes and attachments |
-| Rubric scope | **Mandatory** — *Customer CRUD with validation* |
-| Status | Implemented — awaiting sign-off |
+| Area | *Customer Management* — profiles, contact details, interaction history, notes and attachments |
+| Status | Implemented |
 
 ## 1. Goal
 

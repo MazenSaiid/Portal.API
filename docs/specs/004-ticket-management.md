@@ -2,9 +2,8 @@
 
 | Item | Value |
 |---|---|
-| Source module | PDF §2 *Ticket Management* — create and track tickets, categories and priorities, assign to agents, status and escalation, ticket history |
-| Rubric scope | **Mandatory** — *Ticket CRUD and workflow: category, priority, status and assignment are persisted* |
-| Status | Implemented — awaiting sign-off |
+| Area | *Ticket Management* — create and track tickets, categories and priorities, assign to agents, status and escalation, ticket history |
+| Status | Implemented |
 
 ## 1. Goal
 

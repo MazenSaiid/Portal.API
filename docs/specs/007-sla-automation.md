@@ -2,9 +2,8 @@
 
 | Item | Value |
 |---|---|
-| Source module | PDF §5 *SLA & Automation* — response and resolution targets, automatic assignment, escalation rules, alerts and notifications |
-| Rubric scope | Optional / bonus — *SLA and automation: targets, assignment, escalation, alerts* |
-| Status | Implemented — awaiting sign-off |
+| Area | *SLA & Automation* — response and resolution targets, automatic assignment, escalation rules, alerts and notifications |
+| Status | Implemented |
 
 ## 1. Goal
 
@@ -24,7 +23,7 @@ the right people in the app.
 | S6 | **Auto-assignment** (off by default): a new unassigned ticket goes to the active agent (K4) with the fewest active tickets; ties go to whoever was assigned least recently. | Fair load balancing without manual triage. |
 | S7 | **Escalation rules** are data: *trigger* (first response breached, resolution at risk, resolution breached, unassigned longer than N minutes) + optional *minimum priority* + *actions* (escalate, raise priority to X, notify assignee and/or supervisors). Each rule fires **at most once per ticket**. | Admins shape automation without code; no alert storms. |
 | S8 | A background job evaluates rules every minute (configurable). Rules only look at active tickets. | Near-real-time without extra infrastructure. |
-| S9 | **Notifications are in-app**: a bell with an unread count and a list. Email/SMS/WhatsApp delivery comes with *Communication Channels* (PDF §3). *Supervisors* = active users holding `Tickets.Assign`. | Useful now, easy to extend with delivery channels. |
+| S9 | **Notifications are in-app**: a bell with an unread count and a list. Delivery by email, SMS or WhatsApp is not part of the current scope. *Supervisors* = active users holding `Tickets.Assign`. | Useful now, easy to extend with delivery channels. |
 | S10 | Users are notified when a ticket is assigned to them by someone else (or by auto-assignment), when their ticket is escalated, and by rule actions. | The events an agent must not miss. |
 
 ## 3. Rules

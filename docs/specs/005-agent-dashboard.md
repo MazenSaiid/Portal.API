@@ -2,9 +2,8 @@
 
 | Item | Value |
 |---|---|
-| Source module | PDF §4 *Agent Dashboard* — assigned tickets, customer information, tasks and reminders, quick replies, team collaboration |
-| Rubric scope | **Mandatory** — *Agent dashboard: shows assigned tickets and useful customer/ticket context* |
-| Status | Implemented — awaiting sign-off |
+| Area | *Agent Dashboard* — assigned tickets, customer information, tasks and reminders, quick replies, team collaboration |
+| Status | Implemented |
 
 ## 1. Goal
 
@@ -16,11 +15,11 @@ on their tickets. Frequent answers are one click away as quick replies.
 
 | # | Assumption | Why |
 |---|---|---|
-| D1 | The dashboard is **personal**: everything is computed for the signed-in user. It becomes the landing page for users with `Dashboard.View`; others keep the Overview page. | Agents need "my work", not global statistics (those belong to *Reports*, PDF §9). |
+| D1 | The dashboard is **personal**: everything is computed for the signed-in user. It becomes the landing page for users with `Dashboard.View`; others keep the Overview page. | Agents need "my work", not global statistics (organisation-wide statistics are a separate reporting concern). |
 | D2 | **Tasks are private to-dos** of their owner, optionally linked to a ticket and/or customer. Other users can't see them (404, so it's not even revealed that they exist). | Personal reminders like "call back Thursday". |
-| D3 | **Reminders** = open tasks that are overdue or due today, surfaced as a badge in the top bar and at the top of the task list. Push/email alerts come with *SLA & Automation* (PDF §5). | Useful now without a notification infrastructure. |
+| D3 | **Reminders** = open tasks that are overdue or due today, surfaced as a badge in the top bar and at the top of the task list. In-app notifications are added by *SLA & Automation* ([spec 007](007-sla-automation.md)). | Useful now without a notification infrastructure. |
 | D4 | **Quick replies** are either **shared** (managed by `QuickReplies.Manage`, visible to all agents) or **personal** (owned by one agent). They support the placeholders `{customer}`, `{agent}` and `{ticket}`, filled in when inserted into a ticket comment. | Consistent wording without retyping. |
-| D5 | **Team collaboration** in this iteration means: team workload (active tickets per agent) and a feed of what others did on *my* tickets. @mentions and notifications come with *Alerts & notifications* (PDF §5). | Covers the visibility need without a notification system. |
+| D5 | **Team collaboration** in this iteration means: team workload (active tickets per agent) and a feed of what others did on *my* tickets. Notifications about assignments and escalations are added by [spec 007](007-sla-automation.md); @mentions are not part of the current scope. | Covers the visibility need without a notification system. |
 | D6 | Deleting a ticket or customer unlinks tasks rather than deleting them. | A reminder shouldn't vanish silently. |
 
 ## 3. Dashboard content

@@ -1,7 +1,7 @@
 # Portal — working notes for AI assistants
 
 Customer Support CRM. Backend here (`Portal.API`, .NET 10), frontend in `../Portal.FrontEnd` (Angular 20).
-Assessment rubric `AI_FullStack_Assessment_Rubric_v1.0.xlsx` drives the process. Mandatory scope is in its "Task Scope" sheet.
+Every module is documented under `docs/specs` (what and why) and `docs/plan` (how), verified in `docs/verification.md`.
 
 ## Process (required)
 - Spec first: `docs/specs/00N-*.md` (assumptions, rules, API, acceptance criteria), then `docs/plan/00N-*.md` (tasks), then code.
