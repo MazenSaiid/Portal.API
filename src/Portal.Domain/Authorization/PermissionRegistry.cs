@@ -7,6 +7,9 @@ public static class PermissionRegistry
 {
     public static IReadOnlyList<PermissionDefinition> All { get; } =
     [
+        new(Permissions.Dashboard.View, "Dashboard", "Use the agent dashboard, personal tasks and reminders"),
+        new(Permissions.QuickReplies.Manage, "Quick replies", "Manage shared quick replies"),
+
         new(Permissions.Customers.View, "Customers", "View customers, contacts, interactions, notes and attachments"),
         new(Permissions.Customers.Create, "Customers", "Create customers"),
         new(Permissions.Customers.Edit, "Customers", "Edit customer profiles and contacts; manage anyone's notes and files"),

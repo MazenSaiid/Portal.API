@@ -26,6 +26,16 @@ public static class Permissions
         public const string Delete = "Users.Delete";
     }
 
+    public static class Dashboard
+    {
+        public const string View = "Dashboard.View";
+    }
+
+    public static class QuickReplies
+    {
+        public const string Manage = "QuickReplies.Manage";
+    }
+
     public static class Customers
     {
         public const string View = "Customers.View";
