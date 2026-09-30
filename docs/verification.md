@@ -4,7 +4,7 @@ This document lists every business promise Portal makes, **why it matters**, **t
 **where the check lives**. Each scenario is written as *Given* (the situation), *When* (what someone does) and
 *Then* (what must happen). The test names in the last column let a developer find and run the exact check.
 
-**Status:** all **146 backend tests** and **65 frontend tests** pass. Every module was also walked through in a real
+**Status:** all **149 backend tests** and **65 frontend tests** pass. Every module was also walked through in a real
 browser against SQL Server; the problems that walkthrough found, and how they were fixed, are listed at the end of
 each module section.
 
@@ -176,6 +176,18 @@ now ignores spaces and capitals, so names can stay readable.
 **Walkthrough found and fixed:** SQL Server warned that a connection setting (MARS) weakens rollback inside the audited
 save, so it was removed from the default connection string. Audit details showed internal ids, which now show names.
 Tickets created before SLA tracking had no deadlines, and now get them once at startup.
+
+---
+
+## Demo data
+
+The demo data set ([demo.md](demo.md)) is checked too, so a demo never shows something the rules wouldn't produce.
+
+| Promise | Why it matters | Scenario | Check |
+|---|---|---|---|
+| The demo accounts work as described | A presenter can rely on the guide | Sara, Omar and Karim sign in with the demo password; deactivated Hana is refused | `DemoDataTests.Demo_accounts_sign_in_with_the_demo_password_and_the_deactivated_one_is_refused` |
+| Every state can be shown | The whole workflow and SLA can be demonstrated | The tickets cover every status and every SLA state, including a rule escalation and an unassigned queue; there are attachments and a lockout in the audit log | `Tickets_cover_every_sla_state_and_status` |
+| No alert storm after a reset | The history must look like the rules really ran | Running the rule engine right after seeding fires exactly one rule, on the urgent ticket left for the demo | `Rules_already_ran_where_they_match_so_the_monitor_only_picks_up_the_ticket_left_for_the_demo` |
 
 ---
 

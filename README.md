@@ -79,6 +79,17 @@ npm start
 
 Sign in with **admin@portal.local / Admin@12345**. This account is created in development only.
 
+### Demo data
+To fill every module with realistic data (9 users in 6 roles, 14 customers, 23 tickets in every status and SLA state,
+rules, tasks, notifications and an audit history), stop the API and start it once with:
+
+```bash
+dotnet run --project src/Portal.API --launch-profile http -- --reset-demo
+```
+
+⚠️ This **deletes all existing data** first, and only works in Development. The accounts, the data and a 15-minute
+demo script are in [docs/demo.md](docs/demo.md).
+
 ### Starter data created on first run
 | What | Details |
 |---|---|
@@ -106,7 +117,7 @@ Sign in with **admin@portal.local / Admin@12345**. This account is created in de
 ## Tests
 
 ```bash
-dotnet test                                 # backend: 146 unit and integration tests
+dotnet test                                 # backend: 149 unit and integration tests
 cd ../Portal.FrontEnd && npm run test:ci    # frontend: 65 unit tests in headless Chrome
 ```
 
@@ -121,6 +132,7 @@ group of tests proves.
 | Document | For whom | What's in it |
 |---|---|---|
 | [Portal-Service-Catalog.docx](docs/Portal-Service-Catalog.docx) | Everyone | Purpose of the application and what each module does, in plain English |
+| [demo.md](docs/demo.md) | Presenters, testers | Resetting to the demo data, the demo accounts, and a 15-minute walkthrough of every module |
 | [architecture.md](docs/architecture.md) | Product owners and developers | How things happen step by step, then the technical design |
 | [verification.md](docs/verification.md) | Testers, reviewers | Every business rule, the scenario that proves it, and the test that checks it |
 | [specs/](docs/specs) | Product owners and developers | One specification per module: goal, assumptions, rules, API and acceptance criteria |
