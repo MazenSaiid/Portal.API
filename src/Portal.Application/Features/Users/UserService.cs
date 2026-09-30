@@ -7,7 +7,9 @@ using Portal.Application.Common.Exceptions;
 using Portal.Application.Common.Interfaces;
 using Portal.Application.Common.Models;
 using Portal.Application.Common.Security;
+using Portal.Application.Features.Auditing;
 using Portal.Application.Features.Auth;
+using Portal.Domain.Entities.Auditing;
 using Portal.Domain.Authorization;
 using Portal.Domain.Entities;
 
@@ -30,6 +32,7 @@ public sealed class UserService(
     ICurrentUser currentUser,
     PermissionCache permissionCache,
     ISessionRevoker sessionRevoker,
+    IAuditLogger audit,
     IValidator<CreateUserRequest> createValidator,
     IValidator<UpdateUserRequest> updateValidator,
     IValidator<ResetPasswordRequest> resetPasswordValidator) : IUserService
@@ -169,6 +172,7 @@ public sealed class UserService(
         await userManager.SetLockoutEndDateAsync(user, null);
         await userManager.ResetAccessFailedCountAsync(user);
         await sessionRevoker.RevokeAllAsync(id, ct); // S4 — the old password's sessions end
+        await audit.LogAsync(AuditAction.PasswordReset, $"Password of {user.Email} was reset by an administrator", entityType: "User", entityId: user.Id.ToString(), ct: ct);
 
     }
 

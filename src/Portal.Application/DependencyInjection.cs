@@ -1,6 +1,7 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Portal.Application.Common.Security;
+using Portal.Application.Features.Auditing;
 using Portal.Application.Features.Auth;
 using Portal.Application.Features.Customers;
 using Portal.Application.Features.Permissions;
@@ -32,6 +33,8 @@ public static class DependencyInjection
         services.AddScoped<ITaskService, TaskService>();
         services.AddScoped<IQuickReplyService, QuickReplyService>();
         services.AddScoped<IDashboardService, DashboardService>();
+        services.AddScoped<IAuditLogger, AuditLogger>();
+        services.AddScoped<IAuditLogService, AuditLogService>();
 
         return services;
     }

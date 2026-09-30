@@ -13,4 +13,6 @@ public static class ClaimsPrincipalExtensions
 public sealed class CurrentUser(IHttpContextAccessor accessor) : ICurrentUser
 {
     public Guid? UserId => accessor.HttpContext?.User.GetUserId();
+    public string? UserName => accessor.HttpContext?.User.FindFirst(JwtRegisteredClaimNames.Name)?.Value;
+    public string? IpAddress => accessor.HttpContext?.Connection.RemoteIpAddress?.ToString();
 }

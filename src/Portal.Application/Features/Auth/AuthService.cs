@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using Portal.Application.Common.Exceptions;
 using Portal.Application.Common.Interfaces;
 using Portal.Application.Common.Security;
+using Portal.Application.Features.Auditing;
+using Portal.Domain.Entities.Auditing;
 using Portal.Application.Features.Permissions;
 using Portal.Domain.Entities;
 
@@ -26,6 +28,7 @@ public sealed class AuthService(
     IJwtTokenGenerator tokenGenerator,
     IPermissionService permissionService,
     ISessionRevoker sessionRevoker,
+    IAuditLogger audit,
     IValidator<LoginRequest> loginValidator,
     IValidator<RefreshTokenRequest> refreshValidator,
     IValidator<ChangePasswordRequest> changePasswordValidator,
@@ -38,25 +41,41 @@ public sealed class AuthService(
     {
         await loginValidator.ValidateAndThrowAsync(request, ct);
 
-        var user = await userManager.FindByEmailAsync(request.Email.Trim())
-                   ?? throw new AuthenticationFailedException(InvalidCredentials);
+        var email = request.Email.Trim();
+        var user = await userManager.FindByEmailAsync(email);
+        if (user is null)
+        {
+            await audit.LogAsync(AuditAction.SignInFailed, $"Failed sign-in for {email} (no such account)", userName: email, entityId: email, ct: ct);
+            throw new AuthenticationFailedException(InvalidCredentials);
+        }
 
         if (await userManager.IsLockedOutAsync(user))
+        {
+            await audit.LogAsync(AuditAction.SignInFailed, $"Sign-in blocked for {user.Email}: account is locked", user.Id, user.FullName, ct: ct);
             throw new AuthenticationFailedException("Account is locked due to repeated failed sign-ins. Try again later.");
+        }
 
         if (!await userManager.CheckPasswordAsync(user, request.Password))
         {
             await userManager.AccessFailedAsync(user);
+            await audit.LogAsync(AuditAction.SignInFailed, $"Failed sign-in for {user.Email} (wrong password)", user.Id, user.FullName, ct: ct);
+            if (await userManager.IsLockedOutAsync(user))
+                await audit.LogAsync(AuditAction.LockedOut, $"{user.Email} locked out after repeated failed sign-ins", user.Id, user.FullName, ct: ct);
             throw new AuthenticationFailedException(InvalidCredentials);
         }
 
         // Checked only after the password so that account state is not revealed to strangers.
         if (!user.IsActive)
+        {
+            await audit.LogAsync(AuditAction.SignInFailed, $"Sign-in refused for {user.Email}: account disabled", user.Id, user.FullName, ct: ct);
             throw new AuthenticationFailedException("Your account is disabled. Contact an administrator.");
+        }
 
         await userManager.ResetAccessFailedCountAsync(user);
         user.LastLoginAt = DateTime.UtcNow;
-        return await IssueSessionAsync(user, replacing: null, ct);
+        var session = await IssueSessionAsync(user, replacing: null, ct);
+        await audit.LogAsync(AuditAction.SignedIn, $"{user.Email} signed in", user.Id, user.FullName, ct: ct);
+        return session;
     }
 
     public async Task<LoginResponse> RefreshAsync(RefreshTokenRequest request, CancellationToken ct = default)
@@ -72,6 +91,8 @@ public sealed class AuthService(
             // S2 — an already-rotated token came back: someone else holds a copy. End every session of this user.
             logger.LogWarning("Refresh token reuse detected for user {UserId}; revoking all sessions", stored.UserId);
             await sessionRevoker.RevokeAllAsync(stored.UserId, ct);
+            await audit.LogAsync(AuditAction.TokenReuseDetected,
+                $"Reused session token for {stored.User.Email}; all sessions were ended", stored.UserId, stored.User.FullName, ct: ct);
             throw new AuthenticationFailedException(SessionExpired);
         }
 
@@ -93,9 +114,13 @@ public sealed class AuthService(
         await refreshValidator.ValidateAndThrowAsync(request, ct);
         var hash = tokenGenerator.HashRefreshToken(request.RefreshToken);
         var now = DateTime.UtcNow;
+        var owner = await db.RefreshTokens.Where(t => t.TokenHash == hash && t.RevokedAt == null)
+            .Select(t => new { t.UserId, t.User.Email, Name = t.User.FirstName + " " + t.User.LastName }).FirstOrDefaultAsync(ct);
         await db.RefreshTokens
             .Where(t => t.TokenHash == hash && t.RevokedAt == null)
             .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now), ct);
+        if (owner is not null)
+            await audit.LogAsync(AuditAction.SignedOut, $"{owner.Email} signed out", owner.UserId, owner.Name, ct: ct);
     }
 
     public async Task<CurrentUserDto> GetCurrentUserAsync(Guid userId, CancellationToken ct = default)
@@ -131,6 +156,7 @@ public sealed class AuthService(
 
         // S5 — sign out every other device, keep the current one signed in with a fresh session.
         await sessionRevoker.RevokeAllAsync(userId, ct);
+        await audit.LogAsync(AuditAction.PasswordChanged, $"{user.Email} changed their password", user.Id, user.FullName, ct: ct);
         return await IssueSessionAsync(user, replacing: null, ct);
     }
 
