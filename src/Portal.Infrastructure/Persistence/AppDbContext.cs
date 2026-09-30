@@ -4,7 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Portal.Application.Common.Interfaces;
 using Portal.Domain.Common;
+using Portal.Infrastructure.Persistence.Auditing;
 using Portal.Domain.Entities;
+using Portal.Domain.Entities.Auditing;
 using Portal.Domain.Entities.Customers;
 using Portal.Domain.Entities.Tickets;
 using Portal.Domain.Entities.Work;
@@ -28,17 +30,44 @@ public class AppDbContext(DbContextOptions<AppDbContext> options, ICurrentUser c
     public DbSet<TicketHistoryEntry> TicketHistory => Set<TicketHistoryEntry>();
     public DbSet<AgentTask> AgentTasks => Set<AgentTask>();
     public DbSet<QuickReply> QuickReplies => Set<QuickReply>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
-    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    // The app only saves asynchronously; the sync path funnels into the same audited save.
+    public override int SaveChanges(bool acceptAllChangesOnSuccess) =>
+        SaveChangesAsync(acceptAllChangesOnSuccess).GetAwaiter().GetResult();
+
+    /// <summary>
+    /// Stamps audit fields, then writes the change and its audit log rows (Spec 006) in one transaction.
+    /// </summary>
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
         StampAuditFields();
-        return base.SaveChanges(acceptAllChangesOnSuccess);
+        GuardAuditLog();
+
+        var pending = await AuditTrail.CaptureAsync(this, cancellationToken);
+        if (pending.Count == 0)
+            return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+
+        var ownTransaction = Database.CurrentTransaction is null ? await Database.BeginTransactionAsync(cancellationToken) : null;
+        try
+        {
+            var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+            AuditLogs.AddRange(await AuditTrail.BuildAsync(this, pending, currentUser, cancellationToken));
+            await base.SaveChangesAsync(acceptAllChangesOnSuccess: true, cancellationToken);
+            if (ownTransaction is not null) await ownTransaction.CommitAsync(cancellationToken);
+            return result;
+        }
+        finally
+        {
+            if (ownTransaction is not null) await ownTransaction.DisposeAsync();
+        }
     }
 
-    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    /// <summary>L6 — the audit log is append-only.</summary>
+    private void GuardAuditLog()
     {
-        StampAuditFields();
-        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        if (ChangeTracker.Entries<AuditLog>().Any(e => e.State is EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("Audit log entries are append-only and cannot be changed or deleted.");
     }
 
     /// <summary>Sets Created/Updated At/By on every auditable entity being saved (Spec 003, C9).</summary>
